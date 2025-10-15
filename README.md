@@ -12,7 +12,9 @@ Genera codice Python da frasi in linguaggio naturale italiano.
 - 📚 **Didattico** - Perfetto per imparare Python
 - 🚀 **Cache Intelligente** - Query ripetute 24,000x più veloci! (v2.1+)
 - 🛡️ **Input Validation** - Protezione da DoS e code injection (v2.1+)
-- 🧪 **76 Test Automatici** - Coverage 74% per massima affidabilità (v2.1+)
+- 🧪 **112 Test Automatici** - Coverage 74% per massima affidabilità (v2.1+)
+- 🐍 **143+ Comandi Python** - Supporto completo linguaggio Python (v2.2+)
+- 🔗 **Multi-Comando** - Combina più azioni in un unico programma! (v2.3+)
 
 ## 🚀 Quick Start
 

@@ -183,43 +183,6 @@ Codice Python:"""
         
         return "\n".join(linee_pulite).strip()
     
-    def _genera_multi_comando(self, frase: str, parser_multi) -> str:
-        """
-        Genera codice per multi-comando usando regole.
-        
-        Args:
-            frase: Frase con più comandi
-            parser_multi: Parser multi-comando
-            
-        Returns:
-            Codice combinato
-        """
-        # Analizza struttura
-        analisi = parser_multi.analizza_struttura(frase)
-        
-        # Se ha un pattern riconosciuto, usa template
-        if analisi['pattern'] != 'sequence':
-            from .multi_comando import CombinatoreCodice
-            combinatore = CombinatoreCodice()
-            return combinatore.genera_da_template(analisi['pattern'], frase)
-        
-        # Altrimenti genera ogni comando e combina
-        comandi_separati = analisi['comandi_separati']
-        
-        if len(comandi_separati) > 1:
-            codici = []
-            for cmd in comandi_separati:
-                codice_singolo = self._genera_con_regole(cmd)
-                if not codice_singolo.startswith("# Errore") and not codice_singolo.startswith("# Comando"):
-                    codici.append(codice_singolo)
-            
-            if codici:
-                from .multi_comando import combina_comandi
-                return combina_comandi(frase, codici)
-        
-        # Se non riesce, ritorna errore
-        return "# Comando multi-parte non riconosciuto"
-    
     def _genera_con_regole(self, frase: str) -> str:
         """Genera codice usando sistema a regole."""
         frase_lower = frase.lower()
