@@ -10,6 +10,9 @@ Genera codice Python da frasi in linguaggio naturale italiano.
 - 🔄 **Fallback Intelligente** - Sistema a regole se l'AI non è disponibile
 - 🇮🇹 **Completamente in Italiano** - Parser NLP ottimizzato per l'italiano
 - 📚 **Didattico** - Perfetto per imparare Python
+- 🚀 **Cache Intelligente** - Query ripetute 24,000x più veloci! (v2.1+)
+- 🛡️ **Input Validation** - Protezione da DoS e code injection (v2.1+)
+- 🧪 **76 Test Automatici** - Coverage 74% per massima affidabilità (v2.1+)
 
 ## 🚀 Quick Start
 

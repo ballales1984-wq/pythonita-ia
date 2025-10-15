@@ -14,22 +14,31 @@ from pathlib import Path
 class GeneratoreCodice:
     """Generatore ibrido di codice Python da frasi italiane."""
     
-    def __init__(self, use_ai=True, use_fallback=True):
+    def __init__(self, use_ai=True, use_fallback=True, use_cache=True):
         """
         Inizializza il generatore.
         
         Args:
             use_ai: usa AI locale se disponibile
             use_fallback: usa sistema a regole come fallback
+            use_cache: usa cache per query ripetute
         """
         self.use_ai = use_ai
         self.use_fallback = use_fallback
+        self.use_cache = use_cache
         self.ai_disponibile = False
         self.mappa_comandi = self._carica_mappa_comandi()
         
         # Configura logging
         logging.basicConfig(level=logging.INFO)
         self.logger = logging.getLogger(__name__)
+        
+        # Inizializza cache se richiesto
+        if use_cache:
+            from .cache import get_cache
+            self.cache = get_cache()
+        else:
+            self.cache = None
         
         # Inizializza AI se richiesto
         if use_ai:
@@ -85,6 +94,7 @@ class GeneratoreCodice:
         Genera codice Python da una frase italiana.
         
         Strategia:
+        0. Controlla cache (se abilitata)
         1. Prova con AI locale
         2. Se fallisce o non disponibile, usa sistema a regole
         3. Se anche quello fallisce, ritorna messaggio di errore
@@ -100,11 +110,21 @@ class GeneratoreCodice:
         if not frase:
             return "# Errore: frase vuota"
         
+        # Strategia 0: Controlla cache
+        if self.use_cache and self.cache:
+            cached = self.cache.get(frase)
+            if cached:
+                self.logger.info("✅ Codice recuperato da cache")
+                return cached
+        
         # Strategia 1: AI locale
         if self.use_ai and self.ai_disponibile:
             codice = self._genera_con_ai(frase)
             if codice and not codice.startswith("# Errore"):
                 self.logger.info("✅ Codice generato con AI")
+                # Salva in cache
+                if self.use_cache and self.cache:
+                    self.cache.set(frase, codice)
                 return codice
         
         # Strategia 2: Sistema a regole
@@ -112,6 +132,9 @@ class GeneratoreCodice:
             codice = self._genera_con_regole(frase)
             if codice and not codice.startswith("# Comando non riconosciuto"):
                 self.logger.info("✅ Codice generato con regole")
+                # Salva in cache
+                if self.use_cache and self.cache:
+                    self.cache.set(frase, codice)
                 return codice
         
         # Strategia 3: Fallback finale
