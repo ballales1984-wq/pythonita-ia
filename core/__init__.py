@@ -14,6 +14,24 @@ from .comandi_python import (
     find_command_by_italian,
     get_all_commands
 )
+from .linguaggio_naturale import (
+    ParserLinguisticoAvanzato,
+    get_parser_linguistico,
+    analizza_linguaggio,
+    StrutturaLinguistica
+)
+from .template_domini import (
+    SistemaTemplate,
+    get_sistema_template,
+    scegli_template,
+    TemplateRobot,
+    TemplateManiBioniche
+)
+from .multi_comando import (
+    MultiComandoParser,
+    CombinatoreCodice,
+    combina_comandi
+)
 
 __all__ = [
     "ParserItaliano",

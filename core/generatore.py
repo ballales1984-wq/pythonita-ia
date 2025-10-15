@@ -14,7 +14,7 @@ from pathlib import Path
 class GeneratoreCodice:
     """Generatore ibrido di codice Python da frasi italiane."""
     
-    def __init__(self, use_ai=True, use_fallback=True, use_cache=True):
+    def __init__(self, use_ai=True, use_fallback=True, use_cache=True, template='generico'):
         """
         Inizializza il generatore.
         
@@ -22,6 +22,7 @@ class GeneratoreCodice:
             use_ai: usa AI locale se disponibile
             use_fallback: usa sistema a regole come fallback
             use_cache: usa cache per query ripetute
+            template: template dominio (generico, robot, mano_bionica)
         """
         self.use_ai = use_ai
         self.use_fallback = use_fallback
@@ -32,6 +33,15 @@ class GeneratoreCodice:
         # Configura logging
         logging.basicConfig(level=logging.INFO)
         self.logger = logging.getLogger(__name__)
+        
+        # Inizializza sistema template
+        from .template_domini import get_sistema_template
+        self.sistema_template = get_sistema_template()
+        self.sistema_template.scegli_template(template)
+        
+        # Inizializza parser linguistico
+        from .linguaggio_naturale import get_parser_linguistico
+        self.parser_linguistico = get_parser_linguistico()
         
         # Inizializza cache se richiesto
         if use_cache:
@@ -93,11 +103,22 @@ class GeneratoreCodice:
                 self.logger.info("✅ Codice recuperato da cache")
                 return cached
         
-        # Strategia 1: AI locale (gestisce bene multi-comando)
+        # Strategia 1: Template specifico (robot, mano bionica)
+        if self.sistema_template.get_template_attivo() != 'generico':
+            codice_template = self.sistema_template.genera_con_template(frase)
+            if codice_template:
+                self.logger.info(f"✅ Codice generato con template {self.sistema_template.get_template_attivo()}")
+                if self.use_cache and self.cache:
+                    self.cache.set(frase, codice_template)
+                return codice_template
+        
+        # Strategia 2: AI locale con analisi linguistica avanzata
         if self.use_ai and self.ai_disponibile:
-            codice = self._genera_con_ai(frase)
+            # Analizza struttura linguistica per dare contesto all'AI
+            struttura = self.parser_linguistico.analizza(frase)
+            codice = self._genera_con_ai_avanzato(frase, struttura)
             if codice and not codice.startswith("# Errore"):
-                self.logger.info("✅ Codice generato con AI")
+                self.logger.info("✅ Codice generato con AI + analisi linguistica")
                 # Salva in cache
                 if self.use_cache and self.cache:
                     self.cache.set(frase, codice)
@@ -129,8 +150,84 @@ class GeneratoreCodice:
         # Strategia 3: Fallback finale
         return self._genera_errore(frase)
     
+    def _genera_con_ai_avanzato(self, frase: str, struttura) -> Optional[str]:
+        """
+        Genera codice usando AI con analisi linguistica avanzata.
+        
+        Args:
+            frase: Frase originale
+            struttura: StrutturaLinguistica analizzata
+            
+        Returns:
+            Codice generato
+        """
+        try:
+            import ollama
+            
+            # Costruisci prompt arricchito con analisi linguistica
+            template_attivo = self.sistema_template.get_template_attivo()
+            
+            contesto = f"""
+Template attivo: {template_attivo}
+Soggetto: {struttura.soggetto}
+Verbo: {struttura.verbo}
+Complemento: {struttura.complemento_oggetto}
+Interrogativo: {struttura.interrogativo}
+Modalità: {struttura.modalita}
+"""
+            
+            prompt_base = f"""Genera codice Python per questa richiesta in italiano: "{frase}"
+
+Analisi linguistica:
+{contesto}
+
+"""
+            
+            # Aggiungi contesto template se specifico
+            if template_attivo == 'robot':
+                prompt_base += """
+Contesto: Codice per robot umanoide senza ruote.
+- Usa libreria robot_api per controllo motori
+- Comandi: robot.mano_destra/sinistra, robot.braccio_destro/sinistro
+- Metodi: muovi(), set_angolo(), chiudi_dita(), apri_dita()
+- Sensori: robot.sensore_distanza, robot.sensore_contatto
+
+"""
+            elif template_attivo == 'mano_bionica':
+                prompt_base += """
+Contesto: Codice per mano bionica/protesi.
+- Usa libreria mano_bionica
+- Comandi: mano.chiudi_dito(), mano.apri_dita(), mano.posizione_pinza()
+- Gesti: Gesti.OK, Gesti.THUMBS_UP, Gesti.POINT
+
+"""
+            
+            prompt_base += """
+Regole:
+- Scrivi SOLO codice Python funzionante
+- Non usare markdown o ```
+- Aggiungi commenti solo se necessari
+- Codice pulito e professionale
+
+Codice Python:"""
+            
+            risposta = ollama.chat(
+                model='llama3.2',
+                messages=[{'role': 'user', 'content': prompt_base}]
+            )
+            
+            codice = risposta['message']['content'].strip()
+            codice = self._pulisci_output_ai(codice)
+            
+            return codice
+            
+        except Exception as e:
+            self.logger.error(f"Errore AI avanzato: {e}")
+            # Fallback a AI semplice
+            return self._genera_con_ai(frase)
+    
     def _genera_con_ai(self, frase: str) -> Optional[str]:
-        """Genera codice usando AI locale."""
+        """Genera codice usando AI locale (versione semplice)."""
         try:
             import ollama
             
@@ -151,8 +248,6 @@ Codice Python:"""
             )
             
             codice = risposta['message']['content'].strip()
-            
-            # Pulizia output AI
             codice = self._pulisci_output_ai(codice)
             
             return codice
