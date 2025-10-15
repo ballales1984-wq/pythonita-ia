@@ -57,37 +57,12 @@ class GeneratoreCodice:
             self.ai_disponibile = False
     
     def _carica_mappa_comandi(self) -> Dict:
-        """Carica la mappa dei comandi Python."""
-        mappa_default = {
-            "print": ["stampa", "mostra", "visualizza", "scrivi", "esponi"],
-            "input": ["chiedi", "inserisci", "digita", "domanda", "ricevi"],
-            "open": ["apri", "leggi", "scrivi", "salva", "carica", "esporta"],
-            "def": ["funzione", "definisci", "crea", "costruisci", "dichiara"],
-            "if": ["se", "condizione", "verifica", "controlla", "valuta"],
-            "for": ["ciclo", "ripeti", "scorri", "itera", "ripassa"],
-            "while": ["finché", "continua", "ripeti", "ciclo"],
-            "list": ["lista", "metti", "raccogli", "elementi", "numeri"],
-            "dict": ["dizionario", "mappa", "coppie", "chiavi", "valori"],
-            "+": ["somma", "aggiungi", "più", "totale"],
-            "-": ["sottrai", "togli", "meno", "differenza"],
-            "*": ["moltiplica", "per", "prodotto"],
-            "/": ["dividi", "fraziona", "separa"],
-            "import": ["importa", "usa", "carica", "aggiungi"],
-            "return": ["restituisci", "torna", "rispondi", "dai"],
-            "len": ["lunghezza", "conta", "quantità", "misura"],
-            "range": ["intervallo", "da a", "sequenza", "numeri"],
-            "append": ["aggiungi", "metti", "inserisci", "unisci"],
-            "remove": ["togli", "elimina", "cancella", "rimuovi"],
-            "sum": ["somma", "totale", "aggiungi", "calcola"],
-            "max": ["massimo", "più alto", "valore massimo"],
-            "min": ["minimo", "più basso", "valore minimo"],
-            "sorted": ["ordina", "organizza", "sistema", "metti in ordine"],
-            "type": ["tipo", "classe", "categoria", "natura"],
-            "try": ["prova", "tenta", "gestisci", "verifica"],
-            "except": ["errore", "cattura", "proteggi", "gestione errore"]
-        }
-        
-        return mappa_default
+        """
+        Carica la mappa completa dei comandi Python (100+).
+        Importa da core.comandi_python per mantenere organizzazione.
+        """
+        from .comandi_python import COMANDI_PYTHON
+        return COMANDI_PYTHON
     
     def genera(self, frase: str) -> str:
         """
@@ -218,10 +193,24 @@ Codice Python:"""
         return None
     
     def _applica_regola(self, comando: str, frase: str) -> str:
-        """Applica la regola per generare codice."""
+        """
+        Applica la regola per generare codice.
+        Usa il nuovo sistema di regole esteso con 100+ comandi.
+        """
         frase = frase.lower().strip()
         
-        # Import delle regole dal vecchio translator.py
+        # Usa regole dal modulo regole_comandi
+        from .regole_comandi import REGOLE_GENERAZIONE
+        
+        # Cerca regola specifica per questo comando
+        if comando in REGOLE_GENERAZIONE:
+            try:
+                return REGOLE_GENERAZIONE[comando](frase)
+            except Exception as e:
+                self.logger.error(f"Errore applicando regola per '{comando}': {e}")
+                return f"# Errore generazione: {str(e)}"
+        
+        # Fallback per comandi base (legacy)
         if comando == "print":
             contenuto = frase.split(" ", 1)[-1]
             return f'print("{contenuto}")'

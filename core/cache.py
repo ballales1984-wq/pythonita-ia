@@ -163,7 +163,8 @@ class CacheManager:
             return
         
         try:
-            with open(self.cache_file, 'r', encoding='utf-8') as f:
+            import builtins
+            with builtins.open(self.cache_file, 'r', encoding='utf-8') as f:
                 data = json.load(f)
                 
             # Ricostruisci OrderedDict
@@ -183,7 +184,9 @@ class CacheManager:
             # Converti OrderedDict a dict normale per JSON
             data = {k: list(v) for k, v in self.cache.items()}
             
-            with open(self.cache_file, 'w', encoding='utf-8') as f:
+            # Usa il modulo builtins per evitare problemi con open
+            import builtins
+            with builtins.open(self.cache_file, 'w', encoding='utf-8') as f:
                 json.dump(data, f, ensure_ascii=False, indent=2)
             
             self.logger.debug(f"Cache salvata su disco: {len(self.cache)} elementi")

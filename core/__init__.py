@@ -7,6 +7,13 @@ from .parser import ParserItaliano, get_parser, analizza_frase
 from .generatore import GeneratoreCodice, get_generatore, genera_codice
 from .cache import CacheManager, get_cache
 from .validator import InputValidator, get_validator, validate_input, ValidationResult
+from .comandi_python import (
+    COMANDI_PYTHON,
+    BUILTIN_FUNCTIONS,
+    STANDARD_LIBRARY,
+    find_command_by_italian,
+    get_all_commands
+)
 
 __all__ = [
     "ParserItaliano",
@@ -20,6 +27,11 @@ __all__ = [
     "InputValidator",
     "get_validator",
     "validate_input",
-    "ValidationResult"
+    "ValidationResult",
+    "COMANDI_PYTHON",
+    "BUILTIN_FUNCTIONS",
+    "STANDARD_LIBRARY",
+    "find_command_by_italian",
+    "get_all_commands"
 ]
 

@@ -138,28 +138,56 @@ class Config:
 
 ## 📚 Comandi Supportati
 
-Il sistema a regole supporta 28+ comandi Python:
+Pythonita IA supporta **143+ comandi Python** con sinonimi italiani! 🚀
 
-**Base:**
-- `print`, `input`, `if`, `for`, `while`
-- `def` (funzioni), `try/except` (gestione errori)
+### Categorie Principali:
 
-**Strutture dati:**
-- `list` (liste), `dict` (dizionari)
-- `append`, `remove`, `len`, `sorted`
+**I/O & Controllo** (11):
+- `print`, `input`, `if`, `elif`, `else`, `for`, `while`
+- `break`, `continue`, `pass`, `with`
 
-**Operazioni:**
-- `+`, `-`, `*`, `/` (aritmetica)
-- `sum`, `max`, `min` (aggregazione)
+**Strutture Dati** (17):
+- Liste: `list`, `append`, `extend`, `insert`, `remove`, `pop`, `clear`, `sort`, `reverse`
+- Dizionari: `dict`, `keys`, `values`, `items`, `update`, `get`
+- Altro: `tuple`, `set`, `frozenset`
 
-**File:**
-- `open` (lettura/scrittura file)
-- `import` (importazione librerie)
+**Matematica** (15):
+- Operatori: `+`, `-`, `*`, `/`, `//`, `%`, `**`
+- Funzioni: `sum`, `max`, `min`, `abs`, `round`, `pow`, `divmod`
 
-**Altro:**
-- `range`, `return`, `type`
+**Stringhe** (11):
+- `upper`, `lower`, `split`, `join`, `replace`, `strip`
+- `capitalize`, `title`, `find`, `startswith`, `endswith`
 
-Vedi `core/generatore.py` per l'elenco completo.
+**Iterazione** (5):
+- `range`, `enumerate`, `zip`, `map`, `filter`
+
+**Conversioni** (9):
+- `int`, `float`, `str`, `bool`, `bytes`, `list()`, `tuple()`, `set()`, `dict()`
+
+**File I/O** (7):
+- `open`, `read`, `write`, `close`, `readline`, `readlines`, `writelines`
+
+**Gestione Errori** (5):
+- `try`, `except`, `finally`, `raise`, `assert`
+
+**OOP** (8):
+- `class`, `self`, `super`, `__init__`, `property`, `@staticmethod`, `@classmethod`
+
+**Funzioni** (4):
+- `def`, `return`, `lambda`, `yield`
+
+**Moduli Standard Library** (40+):
+- Matematica: `math`, `random`, `decimal`, `statistics`
+- Data/Tempo: `datetime`, `time`, `calendar`
+- File System: `os`, `pathlib`, `shutil`, `glob`
+- Serializzazione: `json`, `csv`, `pickle`
+- Testo: `re`, `string`, `textwrap`
+- Collezioni: `collections`, `array`, `itertools`, `functools`
+- Sistema: `sys`, `platform`, `subprocess`
+- E molti altri...
+
+**📖 Vedi `COMANDI_SUPPORTATI.md` per l'elenco completo con tabelle ed esempi!**
 
 ## 🎓 Modalità d'Uso Didattico
 
