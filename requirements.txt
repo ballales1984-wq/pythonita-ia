@@ -1,4 +1,14 @@
+# Core dependencies
 spacy==3.7.2
 tensorflow==2.15.0
 pandas==2.1.1
 scikit-learn==1.3.2
+
+# AI locale
+ollama
+
+# GUI (già incluso in Python standard library)
+# tkinter viene installato con Python
+
+# Modello spaCy italiano
+# Installare separatamente con: python -m spacy download it_core_news_sm

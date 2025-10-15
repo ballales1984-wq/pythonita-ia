@@ -1,1 +1,0 @@
-print(3 + 5) - regole_base.py:5
