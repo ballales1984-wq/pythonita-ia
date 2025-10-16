@@ -1,7 +1,0 @@
-{
-  "stampa": ["mostra", "visualizza", "scrivi"],
-  "somma": ["aggiungi", "calcola", "somma"],
-  "lista": ["array", "insieme", "sequenza"],
-  "tensorflow": ["rete neurale", "modello", "deep learning"],
-  "nlp": ["testo", "analizza", "linguaggio"]
-}
