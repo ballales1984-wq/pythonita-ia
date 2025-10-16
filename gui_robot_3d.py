@@ -858,6 +858,20 @@ class PythonitaGUI3D:
                             print(f"[AUDIO] ⚠️  VOLUME TROPPO BASSO! Aumenta microfono in Windows")
                         elif volume_max < 500:
                             print(f"[AUDIO] ⚠️  Volume basso, potrebbe non funzionare")
+                        elif volume_max > 30000:
+                            print(f"[AUDIO] ❌ VOLUME TROPPO ALTO! Audio DISTORTO (clipping)")
+                            print(f"[AUDIO] 💡 SOLUZIONE: Abbassa volume microfono a 70-80% in Windows")
+                            self.root.after(0, lambda: messagebox.showwarning(
+                                "Audio Distorto", 
+                                "⚠️ Volume microfono TROPPO ALTO!\n\n"
+                                f"Volume rilevato: {volume_max} (MAX: 32767)\n"
+                                "L'audio è distorto e Google non può riconoscerlo.\n\n"
+                                "SOLUZIONE:\n"
+                                "1. Vai in Impostazioni Windows → Audio → Input\n"
+                                "2. Abbassa volume microfono a 70-80%\n"
+                                "3. Disattiva 'Amplificazione microfono' se presente\n"
+                                "4. Riprova la registrazione"
+                            ))
                         else:
                             print(f"[AUDIO] ✅ Volume OK")
                         self.root.after(0, lambda: self.status_var.set(f"💾 Salvato: {audio_filename}"))
