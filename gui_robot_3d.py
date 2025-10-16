@@ -211,13 +211,67 @@ class PythonitaGUI3D:
             voice_frame = tk.Frame(header_frame, bg='#2c3e50')
             voice_frame.pack(side=tk.RIGHT, padx=5)
             
-            self.btn_record = tk.Button(voice_frame, text="🔴 REC",
+            # Riga 1: Selezione microfono
+            mic_select_frame = tk.Frame(voice_frame, bg='#2c3e50')
+            mic_select_frame.pack(side=tk.TOP, pady=2)
+            
+            tk.Label(mic_select_frame, text="🎤", bg='#2c3e50', fg='white',
+                    font=('Arial', 9)).pack(side=tk.LEFT, padx=2)
+            
+            # Lista microfoni disponibili
+            import speech_recognition as sr
+            try:
+                self.microfoni_disponibili = sr.Microphone.list_microphone_names()
+                # Filtra solo i microfoni di input (non speaker)
+                self.microfoni_input = [(i, mic) for i, mic in enumerate(self.microfoni_disponibili)
+                                       if 'mic' in mic.lower() or 'audio' in mic.lower()]
+                
+                # Crea lista nomi per dropdown
+                mic_names = [f"[{i}] {mic[:40]}" for i, mic in self.microfoni_input]
+                if not mic_names:
+                    mic_names = ["Nessun microfono trovato"]
+                
+                # Dropdown microfoni
+                from tkinter import ttk
+                self.mic_var = tk.StringVar(value=mic_names[0] if mic_names else "Default")
+                self.mic_dropdown = ttk.Combobox(mic_select_frame, textvariable=self.mic_var,
+                                                values=mic_names, state='readonly',
+                                                width=30, font=('Arial', 8))
+                self.mic_dropdown.pack(side=tk.LEFT, padx=2)
+                
+                # Salva indice microfono selezionato
+                self.selected_mic_index = self.microfoni_input[0][0] if self.microfoni_input else None
+                
+                # Callback cambio microfono
+                def on_mic_change(event):
+                    selected = self.mic_var.get()
+                    try:
+                        # Estrai indice da "[X] Nome"
+                        idx = int(selected.split(']')[0].split('[')[1])
+                        self.selected_mic_index = idx
+                        self.status_var.set(f"🎤 Microfono: {selected.split('] ')[1][:20]}...")
+                        print(f"[SPEECH] Microfono selezionato: [{idx}] {self.microfoni_disponibili[idx]}")
+                    except:
+                        pass
+                
+                self.mic_dropdown.bind('<<ComboboxSelected>>', on_mic_change)
+                
+            except Exception as e:
+                print(f"[SPEECH] Errore caricamento microfoni: {e}")
+                self.microfoni_disponibili = []
+                self.selected_mic_index = None
+            
+            # Riga 2: Pulsanti REC e STOP
+            buttons_frame = tk.Frame(voice_frame, bg='#2c3e50')
+            buttons_frame.pack(side=tk.TOP, pady=2)
+            
+            self.btn_record = tk.Button(buttons_frame, text="🔴 REC",
                                        command=self._avvia_registrazione,
                                        font=('Arial', 9, 'bold'), bg='#e74c3c', fg='white',
                                        relief=tk.RAISED, bd=2, width=6)
             self.btn_record.pack(side=tk.LEFT, padx=2)
             
-            self.btn_stop = tk.Button(voice_frame, text="⬛ STOP",
+            self.btn_stop = tk.Button(buttons_frame, text="⬛ STOP",
                                      command=self._ferma_registrazione,
                                      font=('Arial', 9, 'bold'), bg='#95a5a6', fg='white',
                                      relief=tk.RAISED, bd=2, width=6, state='disabled')
@@ -229,6 +283,7 @@ class PythonitaGUI3D:
             if UX_IMPROVEMENTS_AVAILABLE:
                 add_tooltip(self.btn_record, "Avvia registrazione vocale")
                 add_tooltip(self.btn_stop, "Ferma registrazione")
+                add_tooltip(self.mic_dropdown, "Seleziona microfono da usare")
         
         self.input_box = scrolledtext.ScrolledText(frame, height=15, width=35,
                                                    font=('Consolas', 10), wrap=tk.WORD)
@@ -739,7 +794,9 @@ class PythonitaGUI3D:
                 import time
                 
                 try:
-                    with sr.Microphone() as source:
+                    # Usa microfono selezionato dall'utente
+                    mic_index = self.selected_mic_index if hasattr(self, 'selected_mic_index') and self.selected_mic_index is not None else None
+                    with sr.Microphone(device_index=mic_index) as source:
                         # Fase 1: Calibrazione (0.7 secondi)
                         self.root.after(0, lambda: self.status_var.set("⏳ Calibrando... (0.7s)"))
                         self.speech_recognizer.recognizer.adjust_for_ambient_noise(source, duration=0.7)
