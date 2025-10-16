@@ -95,8 +95,15 @@ class PythonitaGUI3D:
         
         # Speech Recognition
         if SPEECH_RECOGNITION_AVAILABLE:
-            self.speech_recognizer = get_speech_recognizer(language='it-IT')
-            print("[GUI] Speech recognition enabled")
+            # Usa 'sphinx' per OFFLINE (senza internet)
+            # Usa 'google' per ONLINE (più accurato, richiede internet)
+            speech_engine = 'sphinx'  # Cambia in 'google' se hai internet
+            self.speech_recognizer = get_speech_recognizer(
+                language='it-IT',
+                engine=speech_engine
+            )
+            mode = "OFFLINE" if speech_engine == 'sphinx' else "ONLINE"
+            print(f"[GUI] Speech recognition enabled ({mode} mode)")
         else:
             self.speech_recognizer = None
         
