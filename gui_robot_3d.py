@@ -782,8 +782,9 @@ class PythonitaGUI3D:
     def _on_ptt_release(self, event):
         """Evento: pulsante push-to-talk RILASCIATO - ferma registrazione."""
         self._ferma_registrazione()
-        # Ripristina pulsante
-        self.btn_ptt.config(relief=tk.RAISED, bg='#e74c3c', text="🎤 TIENI PREMUTO PER PARLARE")
+        # NON ripristinare subito - mostra stato "processing"
+        self.btn_ptt.config(relief=tk.RAISED, bg='#f39c12', text="🔄 RICONOSCENDO...", state='disabled')
+        self.status_var.set("🔄 Analisi in corso...")
     
     def _avvia_registrazione(self):
         """Avvia registrazione vocale con feedback immediato."""
@@ -890,13 +891,13 @@ class PythonitaGUI3D:
     def _ferma_registrazione(self):
         """Ferma la registrazione in corso."""
         self.recording = False
-        self.status_var.set("⏹️ Registrazione fermata")
-        self._reset_recording_buttons()
+        # NON ripristinare pulsante qui - lo fa _on_voice_result quando finisce il riconoscimento
     
     def _reset_recording_buttons(self):
         """Ripristina stato pulsanti registrazione."""
         if hasattr(self, 'btn_ptt'):
-            self.btn_ptt.config(relief=tk.RAISED, bg='#e74c3c', text="🎤 TIENI PREMUTO PER PARLARE")
+            self.btn_ptt.config(relief=tk.RAISED, bg='#e74c3c', 
+                               text="🎤 TIENI PREMUTO PER PARLARE", state='normal')
     
     def _on_voice_result(self, success, text):
         """Callback con risultato riconoscimento vocale."""
