@@ -1,0 +1,122 @@
+╔══════════════════════════════════════════════════════════════════╗
+║                                                                  ║
+║         CREA RELEASE GITHUB v3.1.0 - GUIDA VISUALE               ║
+║                                                                  ║
+╚══════════════════════════════════════════════════════════════════╝
+
+Il browser si e' aperto su:
+https://github.com/ballales1984-wq/pythonita-ia/releases/new?tag=v3.1.0
+
+SEGUI QUESTI PASSI:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 1: TAG
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Nel campo "Choose a tag":
+→ Dovrebbe già mostrare: v3.1.0 ✅
+→ Se non c'è, selezionalo dal dropdown
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 2: TITLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Nel campo "Release title", scrivi:
+
+v3.1.0 - Oggetti 3D + Grafica Avanzata + Versione Commerciale
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 3: DESCRIPTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Nel campo "Describe this release":
+
+1. Apri file: RELEASE_DESCRIPTION.md
+2. COPIA TUTTO il contenuto (Ctrl+A, Ctrl+C)
+3. INCOLLA nel box description (Ctrl+V)
+
+Il file contiene:
+- Descrizione novità
+- Features
+- Download links
+- Documentazione
+- Pricing
+- Supporto
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 4: ATTACH FILES (Opzionale)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Scroll in fondo, sezione "Attach binaries":
+
+OPZIONE A - Upload EXE (Consigliato):
+→ Trascina: dist\PythonitaIA.exe (113 MB)
+→ Attendere upload (~1-3 minuti)
+→ Rinomina: PythonitaIA-v3.1.0-Windows.exe
+
+OPZIONE B - Solo codice sorgente:
+→ Nessun file (GitHub genera zip automatico)
+
+CONSIGLIO: Carica exe per download facile! ✅
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 5: OPTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+In fondo alla pagina:
+
+☑ Set as the latest release
+☑ Create a discussion for this release (opzionale)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 6: PUBLISH!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Click il bottone verde:
+[Publish release]
+
+✅ FATTO!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DOPO PUBBLICAZIONE:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+La release sara' visibile su:
+https://github.com/ballales1984-wq/pythonita-ia/releases/tag/v3.1.0
+
+CONDIVIDI QUESTO LINK!
+
+Downloads disponibili:
+- Source code (zip)
+- Source code (tar.gz)
+- PythonitaIA-v3.1.0-Windows.exe (se caricato)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PROSSIMO PASSO:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Post sui social:
+
+"🎉 RILASCIATO Pythonita IA v3.1.0!
+
+Oggetti 3D + Grafica Avanzata + Versione Commerciale
+
+Features:
+✨ 6 oggetti 3D interattivi
+✨ Rendering mesh avanzato
+✨ Sistema licenze commerciale
+✨ Exe standalone (113 MB)
+
+Download: https://github.com/ballales1984-wq/pythonita-ia/releases/tag/v3.1.0
+
+#Python #AI #Robotics"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
