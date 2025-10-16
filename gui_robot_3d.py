@@ -69,8 +69,8 @@ class PythonitaGUI3D:
         self.root.title("Pythonita IA v3.1 - Visualizzatore 3D Robot")
         self.root.geometry("1400x800")
         
-        # Generatore con template robot
-        self.generatore = GeneratoreCodice(template='robot', use_ai=False, use_cache=False)
+        # Generatore con template robot e AI attiva
+        self.generatore = GeneratoreCodice(template='robot', use_ai=True, use_cache=True)
         
         # Modelli 3D
         self.mano = ManoRobotica()
