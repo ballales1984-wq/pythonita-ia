@@ -420,18 +420,23 @@ class PythonitaGUI3D:
     
     def _genera_codice_con_ai(self):
         """Genera codice con AI quando utente preme il pulsante."""
+        print("[DEBUG] Pulsante AI cliccato!")  # DEBUG
+        
         frase = self.input_box.get('1.0', tk.END).strip()
+        print(f"[DEBUG] Frase letta: '{frase}'")  # DEBUG
         
         if not frase:
             messagebox.showwarning("Input vuoto", "Scrivi prima un comando in italiano!")
             return
         
-        # Feedback visivo
+        # Feedback visivo IMMEDIATO
+        print("[DEBUG] Inizio generazione...")  # DEBUG
         self.status_var.set("🤖 AI sta generando codice...")
-        self.root.update_idletasks()
+        self.root.update()  # Forza update immediato
         
         # Genera con AI
         self._aggiorna_codice()
+        print("[DEBUG] Codice generato!")  # DEBUG
         
         # Feedback successo
         self.status_var.set(f"✅ Codice generato per: '{frase}'")
