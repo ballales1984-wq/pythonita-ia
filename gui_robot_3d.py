@@ -416,8 +416,8 @@ class PythonitaGUI3D:
         if hasattr(self, '_key_timer'):
             self.root.after_cancel(self._key_timer)
         
-        # Avvia nuovo timer (300ms di pausa = auto-genera)
-        self._key_timer = self.root.after(300, self._aggiorna_codice)
+        # Avvia nuovo timer (800ms di pausa = auto-genera) - aumentato per stabilità
+        self._key_timer = self.root.after(800, self._aggiorna_codice)
     
     def _aggiorna_codice(self):
         """Aggiorna codice generato."""
