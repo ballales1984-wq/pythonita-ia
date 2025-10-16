@@ -1,0 +1,65 @@
+[build-system]
+requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pythonita-ia"
+version = "3.1.0"
+description = "Software professionale NLP italiano → Python con visualizzatore 3D robot"
+readme = "README.md"
+requires-python = ">=3.7"
+license = {text = "Proprietary"}
+authors = [{name = "Pythonita Team", email = "support@pythonita.com"}]
+keywords = ["python", "nlp", "italian", "code-generation", "robotics", "3d-visualization", "ai"]
+
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "License :: Other/Proprietary License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Software Development :: Code Generators",
+]
+
+dependencies = [
+    "numpy>=1.19.0",
+    "matplotlib>=3.0.0",
+    "spacy>=3.0.0",
+    "requests>=2.25.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=6.0.0",
+    "pytest-cov>=2.10.0",
+    "black>=21.0",
+    "flake8>=3.8.0",
+    "mypy>=0.900",
+]
+build = [
+    "pyinstaller>=6.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/ballales1984-wq/pythonita-ia"
+Documentation = "https://github.com/ballales1984-wq/pythonita-ia/wiki"
+Repository = "https://github.com/ballales1984-wq/pythonita-ia"
+Changelog = "https://github.com/ballales1984-wq/pythonita-ia/blob/main/CHANGELOG.md"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+addopts = "-v --cov=pythonita --cov-report=html --cov-report=term"
+
+[tool.black]
+line-length = 100
+target-version = ['py37', 'py38', 'py39', 'py310', 'py311']
+
+[tool.mypy]
+python_version = "3.7"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+
