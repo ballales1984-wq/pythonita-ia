@@ -95,9 +95,9 @@ class PythonitaGUI3D:
         
         # Speech Recognition
         if SPEECH_RECOGNITION_AVAILABLE:
-            # Usa 'sphinx' per OFFLINE (senza internet)
-            # Usa 'google' per ONLINE (più accurato, richiede internet)
-            speech_engine = 'sphinx'  # Cambia in 'google' se hai internet
+            # Usa 'sphinx' per OFFLINE (senza internet, ma limitato per italiano)
+            # Usa 'google' per ONLINE (più accurato, richiede internet) ✅ RACCOMANDATO
+            speech_engine = 'google'  # Cambia in 'sphinx' se non hai internet
             self.speech_recognizer = get_speech_recognizer(
                 language='it-IT',
                 engine=speech_engine
