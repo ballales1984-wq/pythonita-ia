@@ -823,6 +823,36 @@ class PythonitaGUI3D:
                         if not self.recording:  # Check se stop premuto durante ascolto
                             return
                         
+                        # Salva audio in file WAV per debug e ascolto
+                        import wave
+                        import numpy as np
+                        from datetime import datetime
+                        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                        audio_filename = f"registrazione_{timestamp}.wav"
+                        
+                        # Analizza volume
+                        audio_data = np.frombuffer(audio.get_raw_data(), dtype=np.int16)
+                        volume_max = np.max(np.abs(audio_data))
+                        volume_avg = np.mean(np.abs(audio_data))
+                        
+                        with wave.open(audio_filename, 'wb') as wf:
+                            wf.setnchannels(1)
+                            wf.setsampwidth(audio.sample_width)
+                            wf.setframerate(audio.sample_rate)
+                            wf.writeframes(audio.get_raw_data())
+                        
+                        print(f"[AUDIO] File salvato: {audio_filename}")
+                        print(f"[AUDIO] Volume MAX: {volume_max}, AVG: {volume_avg:.0f}")
+                        
+                        # Diagnosi volume
+                        if volume_max < 100:
+                            print(f"[AUDIO] ⚠️  VOLUME TROPPO BASSO! Aumenta microfono in Windows")
+                        elif volume_max < 500:
+                            print(f"[AUDIO] ⚠️  Volume basso, potrebbe non funzionare")
+                        else:
+                            print(f"[AUDIO] ✅ Volume OK")
+                        self.root.after(0, lambda: self.status_var.set(f"💾 Salvato: {audio_filename}"))
+                        
                         # Fase 4: Riconoscimento
                         self.root.after(0, lambda: self.status_var.set("🔄 Riconoscendo..."))
                         text = self.speech_recognizer._recognize_audio(audio)
