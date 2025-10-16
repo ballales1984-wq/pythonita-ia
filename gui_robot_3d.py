@@ -42,6 +42,23 @@ except ImportError:
     THEMES_AVAILABLE = False
     print("[WARN] Theme system not available")
 
+# Speech Recognition
+try:
+    from pythonita.utils.speech_recognition_module import get_speech_recognizer
+    SPEECH_RECOGNITION_AVAILABLE = True
+except ImportError:
+    SPEECH_RECOGNITION_AVAILABLE = False
+    print("[WARN] Speech recognition not available")
+
+# Arduino Controller
+try:
+    from pythonita.hardware.arduino_controller import get_arduino_controller
+    from core.arduino_commands import get_arduino_template
+    ARDUINO_AVAILABLE = True
+except ImportError:
+    ARDUINO_AVAILABLE = False
+    print("[WARN] Arduino controller not available")
+
 
 class PythonitaGUI3D:
     """GUI con visualizzazione 3D robot."""
@@ -75,6 +92,22 @@ class PythonitaGUI3D:
             print(f"[GUI] Theme system enabled: {self.theme_manager.current_theme_name}")
         else:
             self.theme_manager = None
+        
+        # Speech Recognition
+        if SPEECH_RECOGNITION_AVAILABLE:
+            self.speech_recognizer = get_speech_recognizer(language='it-IT')
+            print("[GUI] Speech recognition enabled")
+        else:
+            self.speech_recognizer = None
+        
+        # Arduino Controller
+        if ARDUINO_AVAILABLE:
+            self.arduino_controller = get_arduino_controller()
+            self.arduino_connected = False
+            print("[GUI] Arduino controller enabled")
+        else:
+            self.arduino_controller = None
+            self.arduino_connected = False
         
         # Timer per aggiornamenti
         self.after_id = None
@@ -159,8 +192,22 @@ class PythonitaGUI3D:
         frame = tk.Frame(parent)
         frame.grid(row=0, column=0, sticky='nsew', padx=5)
         
-        tk.Label(frame, text="Comando in Italiano",
-                font=('Arial', 11, 'bold')).pack(anchor='w')
+        # Header con pulsante vocale
+        header_frame = tk.Frame(frame)
+        header_frame.pack(fill=tk.X, anchor='w')
+        
+        tk.Label(header_frame, text="Comando in Italiano",
+                font=('Arial', 11, 'bold')).pack(side=tk.LEFT)
+        
+        # Pulsante registrazione vocale
+        if SPEECH_RECOGNITION_AVAILABLE:
+            self.btn_voice = tk.Button(header_frame, text="🎤 Registra",
+                                      command=self._registra_vocale,
+                                      font=('Arial', 9), bg='#e74c3c', fg='white',
+                                      relief=tk.RAISED, bd=2)
+            self.btn_voice.pack(side=tk.RIGHT, padx=5)
+            if UX_IMPROVEMENTS_AVAILABLE:
+                add_tooltip(self.btn_voice, "Registra comando vocale (5 secondi)")
         
         self.input_box = scrolledtext.ScrolledText(frame, height=15, width=35,
                                                    font=('Consolas', 10), wrap=tk.WORD)
@@ -179,6 +226,13 @@ class PythonitaGUI3D:
             ("Pinza", "fai pinza"),
             ("Afferra", "afferra oggetto"),
         ]
+        
+        # Esempi Arduino se disponibile
+        if ARDUINO_AVAILABLE:
+            esempi.extend([
+                ("LED ON", "accendi led pin 13"),
+                ("LED Blink", "lampeggia led 3 volte"),
+            ])
         
         for testo, comando in esempi:
             btn = tk.Button(esempi_frame, text=testo, 
@@ -252,6 +306,16 @@ class PythonitaGUI3D:
                                   font=('Arial', 10), bg='#9b59b6', fg='white',
                                   padx=20, pady=8)
         btn_screenshot.pack(side=tk.LEFT, padx=10)
+        
+        # Arduino panel button
+        if ARDUINO_AVAILABLE:
+            btn_arduino = tk.Button(frame, text="🤖 Arduino",
+                                  command=self._mostra_pannello_arduino,
+                                  font=('Arial', 10), bg='#16a085', fg='white',
+                                  padx=20, pady=8)
+            btn_arduino.pack(side=tk.LEFT, padx=10)
+            if UX_IMPROVEMENTS_AVAILABLE:
+                add_tooltip(btn_arduino, "Configura e controlla Arduino")
         
         # Status
         self.status_var = tk.StringVar(value="Pronto")
@@ -628,6 +692,284 @@ class PythonitaGUI3D:
             
         except Exception as e:
             print(f"[THEME] Errore applicazione tema: {e}")
+    
+    def _registra_vocale(self):
+        """Registra comando vocale e lo inserisce nell'input."""
+        if not SPEECH_RECOGNITION_AVAILABLE or not self.speech_recognizer:
+            messagebox.showwarning("Funzione Non Disponibile",
+                                  "Speech recognition non installato.\nInstalla: pip install SpeechRecognition pyaudio")
+            return
+        
+        try:
+            # Cambia colore pulsante (registrazione in corso)
+            if hasattr(self, 'btn_voice'):
+                self.btn_voice.config(bg='#c0392b', text='🔴 Registrando...')
+                self.root.update()
+            
+            # Status update
+            if self.status_bar:
+                self.status_bar.set_busy("Registrando audio... Parla ora!")
+            self.status_var.set("🎤 Registrando...")
+            
+            # Esegui riconoscimento in thread separato
+            def riconosci():
+                success, text = self.speech_recognizer.listen_from_microphone(timeout=5, phrase_time_limit=10)
+                
+                # Update UI in main thread
+                self.root.after(0, lambda: self._on_voice_result(success, text))
+            
+            thread = threading.Thread(target=riconosci)
+            thread.start()
+            
+        except Exception as e:
+            messagebox.showerror("Errore Registrazione", f"Errore durante registrazione:\n{e}")
+            if self.status_bar:
+                self.status_bar.set_error("Errore registrazione vocale")
+            # Ripristina pulsante
+            if hasattr(self, 'btn_voice'):
+                self.btn_voice.config(bg='#e74c3c', text='🎤 Registra')
+    
+    def _on_voice_result(self, success, text):
+        """Callback con risultato riconoscimento vocale."""
+        # Ripristina pulsante
+        if hasattr(self, 'btn_voice'):
+            self.btn_voice.config(bg='#e74c3c', text='🎤 Registra')
+        
+        if success:
+            # Inserisci testo riconosciuto
+            self.input_box.delete('1.0', tk.END)
+            self.input_box.insert('1.0', text)
+            
+            # Feedback successo
+            if self.status_bar:
+                self.status_bar.set_success(f"Riconosciuto: '{text}'")
+            self.status_var.set(f"✓ Riconosciuto: '{text}'")
+            
+            # Auto-genera codice
+            self._aggiorna_codice()
+        else:
+            # Errore
+            messagebox.showwarning("Riconoscimento Fallito", text)
+            if self.status_bar:
+                self.status_bar.set_error("Riconoscimento fallito")
+            self.status_var.set("❌ Riconoscimento fallito")
+    
+    def _mostra_pannello_arduino(self):
+        """Mostra pannello configurazione e controllo Arduino."""
+        if not ARDUINO_AVAILABLE:
+            messagebox.showwarning("Funzione Non Disponibile",
+                                  "Arduino controller non installato.\nInstalla: pip install pyserial")
+            return
+        
+        # Crea finestra pannello Arduino
+        arduino_window = tk.Toplevel(self.root)
+        arduino_window.title("Pannello Arduino - Pythonita IA")
+        arduino_window.geometry("600x500")
+        arduino_window.transient(self.root)
+        
+        # Header
+        header_frame = tk.Frame(arduino_window, bg='#16a085', pady=10)
+        header_frame.pack(fill=tk.X)
+        
+        tk.Label(header_frame, text="🤖 Controllo Arduino",
+                font=('Arial', 14, 'bold'), bg='#16a085', fg='white').pack()
+        
+        # --- SEZIONE CONNESSIONE ---
+        conn_frame = tk.LabelFrame(arduino_window, text="Connessione", font=('Arial', 10, 'bold'), padx=10, pady=10)
+        conn_frame.pack(fill=tk.X, padx=10, pady=10)
+        
+        # Porta COM
+        porta_frame = tk.Frame(conn_frame)
+        porta_frame.pack(fill=tk.X, pady=5)
+        
+        tk.Label(porta_frame, text="Porta COM:", font=('Arial', 9)).pack(side=tk.LEFT, padx=5)
+        
+        # Lista porte disponibili
+        porte = self.arduino_controller.list_available_ports()
+        porte_str = [p['port'] for p in porte] if porte else ['Nessuna porta']
+        
+        self.arduino_porta_var = tk.StringVar(value=porte_str[0] if porte else 'COM3')
+        porta_menu = ttk.Combobox(porta_frame, textvariable=self.arduino_porta_var,
+                                 values=porte_str, state='readonly', width=15)
+        porta_menu.pack(side=tk.LEFT, padx=5)
+        
+        # Baudrate
+        tk.Label(porta_frame, text="Baud:", font=('Arial', 9)).pack(side=tk.LEFT, padx=5)
+        self.arduino_baud_var = tk.IntVar(value=9600)
+        baud_menu = ttk.Combobox(porta_frame, textvariable=self.arduino_baud_var,
+                                values=[9600, 19200, 38400, 57600, 115200], state='readonly', width=10)
+        baud_menu.pack(side=tk.LEFT, padx=5)
+        
+        # Bottoni connessione
+        btn_frame = tk.Frame(conn_frame)
+        btn_frame.pack(fill=tk.X, pady=5)
+        
+        self.arduino_status_var = tk.StringVar(value="Non connesso")
+        tk.Label(btn_frame, textvariable=self.arduino_status_var, font=('Arial', 9),
+                fg='red').pack(side=tk.LEFT, padx=5)
+        
+        tk.Button(btn_frame, text="Connetti", command=lambda: self._arduino_connect(arduino_window),
+                 bg='#27ae60', fg='white', font=('Arial', 9)).pack(side=tk.LEFT, padx=5)
+        
+        tk.Button(btn_frame, text="Disconnetti", command=lambda: self._arduino_disconnect(arduino_window),
+                 bg='#e74c3c', fg='white', font=('Arial', 9)).pack(side=tk.LEFT, padx=5)
+        
+        tk.Button(btn_frame, text="🔄 Aggiorna Porte", command=lambda: self._arduino_refresh_ports(porta_menu),
+                 font=('Arial', 9)).pack(side=tk.LEFT, padx=5)
+        
+        # --- SEZIONE CONTROLLO MANUALE ---
+        control_frame = tk.LabelFrame(arduino_window, text="Controllo Manuale", font=('Arial', 10, 'bold'), padx=10, pady=10)
+        control_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        
+        # LED Control
+        led_frame = tk.Frame(control_frame)
+        led_frame.pack(fill=tk.X, pady=5)
+        
+        tk.Label(led_frame, text="LED Pin:", font=('Arial', 9)).pack(side=tk.LEFT, padx=5)
+        self.arduino_led_pin_var = tk.IntVar(value=13)
+        tk.Spinbox(led_frame, from_=0, to=13, textvariable=self.arduino_led_pin_var,
+                  width=5, font=('Arial', 9)).pack(side=tk.LEFT, padx=5)
+        
+        tk.Button(led_frame, text="ON", command=lambda: self._arduino_led_on(),
+                 bg='#f39c12', fg='white', width=8).pack(side=tk.LEFT, padx=3)
+        tk.Button(led_frame, text="OFF", command=lambda: self._arduino_led_off(),
+                 bg='#95a5a6', fg='white', width=8).pack(side=tk.LEFT, padx=3)
+        tk.Button(led_frame, text="Blink 3x", command=lambda: self._arduino_led_blink(),
+                 bg='#3498db', fg='white', width=10).pack(side=tk.LEFT, padx=3)
+        
+        # Servo Control
+        servo_frame = tk.Frame(control_frame)
+        servo_frame.pack(fill=tk.X, pady=5)
+        
+        tk.Label(servo_frame, text="Servo Pin:", font=('Arial', 9)).pack(side=tk.LEFT, padx=5)
+        self.arduino_servo_pin_var = tk.IntVar(value=9)
+        tk.Spinbox(servo_frame, from_=0, to=13, textvariable=self.arduino_servo_pin_var,
+                  width=5, font=('Arial', 9)).pack(side=tk.LEFT, padx=5)
+        
+        tk.Label(servo_frame, text="Angolo:", font=('Arial', 9)).pack(side=tk.LEFT, padx=5)
+        self.arduino_servo_angle_var = tk.IntVar(value=90)
+        tk.Scale(servo_frame, from_=0, to=180, orient=tk.HORIZONTAL,
+                variable=self.arduino_servo_angle_var, length=200).pack(side=tk.LEFT, padx=5)
+        
+        tk.Button(servo_frame, text="Muovi", command=lambda: self._arduino_servo_move(),
+                 bg='#9b59b6', fg='white', width=10).pack(side=tk.LEFT, padx=5)
+        
+        # Sensore Read
+        sensor_frame = tk.Frame(control_frame)
+        sensor_frame.pack(fill=tk.X, pady=5)
+        
+        tk.Label(sensor_frame, text="Sensore Pin A:", font=('Arial', 9)).pack(side=tk.LEFT, padx=5)
+        self.arduino_sensor_pin_var = tk.IntVar(value=0)
+        tk.Spinbox(sensor_frame, from_=0, to=5, textvariable=self.arduino_sensor_pin_var,
+                  width=5, font=('Arial', 9)).pack(side=tk.LEFT, padx=5)
+        
+        tk.Button(sensor_frame, text="Leggi Valore", command=lambda: self._arduino_sensor_read(),
+                 bg='#16a085', fg='white', width=15).pack(side=tk.LEFT, padx=5)
+        
+        self.arduino_sensor_value_var = tk.StringVar(value="---")
+        tk.Label(sensor_frame, textvariable=self.arduino_sensor_value_var,
+                font=('Arial', 10, 'bold'), fg='#2c3e50').pack(side=tk.LEFT, padx=10)
+        
+        # Console output
+        console_frame = tk.Frame(control_frame)
+        console_frame.pack(fill=tk.BOTH, expand=True, pady=10)
+        
+        tk.Label(console_frame, text="Console Arduino:", font=('Arial', 9, 'bold')).pack(anchor='w')
+        self.arduino_console = scrolledtext.ScrolledText(console_frame, height=8, width=60,
+                                                         font=('Consolas', 8), bg='#1e1e1e', fg='#00ff00')
+        self.arduino_console.pack(fill=tk.BOTH, expand=True)
+        self.arduino_console.insert('1.0', "Console Arduino - Pronta\n")
+    
+    def _arduino_connect(self, window):
+        """Connetti ad Arduino."""
+        porta = self.arduino_porta_var.get()
+        baud = self.arduino_baud_var.get()
+        
+        self.arduino_controller.port = porta
+        self.arduino_controller.baudrate = baud
+        
+        success, msg = self.arduino_controller.connect()
+        
+        if success:
+            self.arduino_connected = True
+            self.arduino_status_var.set("✓ Connesso")
+            window.nametowidget(window.winfo_children()[1]).winfo_children()[2].winfo_children()[0].config(fg='green')
+            self.arduino_console.insert(tk.END, f"[OK] {msg}\n")
+        else:
+            self.arduino_connected = False
+            self.arduino_status_var.set("✗ Non connesso")
+            self.arduino_console.insert(tk.END, f"[ERROR] {msg}\n")
+            messagebox.showerror("Errore Connessione", msg)
+    
+    def _arduino_disconnect(self, window):
+        """Disconnetti da Arduino."""
+        success, msg = self.arduino_controller.disconnect()
+        self.arduino_connected = False
+        self.arduino_status_var.set("Non connesso")
+        window.nametowidget(window.winfo_children()[1]).winfo_children()[2].winfo_children()[0].config(fg='red')
+        self.arduino_console.insert(tk.END, f"[INFO] {msg}\n")
+    
+    def _arduino_refresh_ports(self, menu_widget):
+        """Aggiorna lista porte disponibili."""
+        porte = self.arduino_controller.list_available_ports()
+        porte_str = [p['port'] for p in porte] if porte else ['Nessuna porta']
+        menu_widget.config(values=porte_str)
+        self.arduino_console.insert(tk.END, f"[INFO] Trovate {len(porte)} porte\n")
+    
+    def _arduino_led_on(self):
+        """Accendi LED."""
+        if not self.arduino_connected:
+            messagebox.showwarning("Arduino Non Connesso", "Connetti Arduino prima di inviare comandi")
+            return
+        pin = self.arduino_led_pin_var.get()
+        success, msg = self.arduino_controller.led_on(pin)
+        self.arduino_console.insert(tk.END, f"[LED] Pin {pin} ON - {msg}\n")
+        self.arduino_console.see(tk.END)
+    
+    def _arduino_led_off(self):
+        """Spegni LED."""
+        if not self.arduino_connected:
+            messagebox.showwarning("Arduino Non Connesso", "Connetti Arduino prima di inviare comandi")
+            return
+        pin = self.arduino_led_pin_var.get()
+        success, msg = self.arduino_controller.led_off(pin)
+        self.arduino_console.insert(tk.END, f"[LED] Pin {pin} OFF - {msg}\n")
+        self.arduino_console.see(tk.END)
+    
+    def _arduino_led_blink(self):
+        """Lampeggia LED."""
+        if not self.arduino_connected:
+            messagebox.showwarning("Arduino Non Connesso", "Connetti Arduino prima di inviare comandi")
+            return
+        pin = self.arduino_led_pin_var.get()
+        success, msg = self.arduino_controller.led_blink(pin, times=3, delay=0.3)
+        self.arduino_console.insert(tk.END, f"[LED] Pin {pin} BLINK - {msg}\n")
+        self.arduino_console.see(tk.END)
+    
+    def _arduino_servo_move(self):
+        """Muovi servo."""
+        if not self.arduino_connected:
+            messagebox.showwarning("Arduino Non Connesso", "Connetti Arduino prima di inviare comandi")
+            return
+        pin = self.arduino_servo_pin_var.get()
+        angle = self.arduino_servo_angle_var.get()
+        success, msg = self.arduino_controller.servo_write(pin, angle)
+        self.arduino_console.insert(tk.END, f"[SERVO] Pin {pin} -> {angle}° - {msg}\n")
+        self.arduino_console.see(tk.END)
+    
+    def _arduino_sensor_read(self):
+        """Leggi sensore."""
+        if not self.arduino_connected:
+            messagebox.showwarning("Arduino Non Connesso", "Connetti Arduino prima di inviare comandi")
+            return
+        pin = self.arduino_sensor_pin_var.get()
+        success, value = self.arduino_controller.analog_read(pin)
+        if success:
+            self.arduino_sensor_value_var.set(f"{value} / 1023")
+            self.arduino_console.insert(tk.END, f"[SENSOR] Pin A{pin} = {value}\n")
+        else:
+            self.arduino_console.insert(tk.END, f"[ERROR] Lettura sensore fallita\n")
+        self.arduino_console.see(tk.END)
 
 
 def main():
