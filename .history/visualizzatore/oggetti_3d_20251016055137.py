@@ -674,7 +674,6 @@ def crea_oggetto(tipo: str, posizione: Tuple[float, float, float] = (0, 15, 0)) 
         Oggetto3D creato
     """
     tipi = {
-        # Originali
         "mela": Mela,
         "palla": Palla,
         "cubo": Cubo,
@@ -682,26 +681,6 @@ def crea_oggetto(tipo: str, posizione: Tuple[float, float, float] = (0, 15, 0)) 
         "smartphone": Smartphone,
         "telefono": Smartphone,
         "tazza": Tazza,
-        # Nuovi - Strumenti
-        "martello": Martello,
-        "cacciavite": Cacciavite,
-        "chiave": ChiaveInglese,
-        "chiave_inglese": ChiaveInglese,
-        "pinza": Pinza,
-        # Nuovi - Cibo
-        "banana": Banana,
-        "arancia": Arancia,
-        "panino": Panino,
-        "sandwich": Panino,
-        # Nuovi - Elettronica
-        "mouse": Mouse,
-        "tastiera": Tastiera,
-        "keyboard": Tastiera,
-        # Nuovi - Quotidiano
-        "libro": Libro,
-        "penna": Penna,
-        "orologio": Orologio,
-        "watch": Orologio,
     }
     
     classe = tipi.get(tipo.lower(), Cubo)

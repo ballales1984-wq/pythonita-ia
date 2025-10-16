@@ -69,13 +69,6 @@ class PythonitaGUI3D:
         else:
             self.status_bar = None
         
-        # Theme System
-        if THEMES_AVAILABLE:
-            self.theme_manager = get_theme_manager()
-            print(f"[GUI] Theme system enabled: {self.theme_manager.current_theme_name} ✅")
-        else:
-            self.theme_manager = None
-        
         # Timer per aggiornamenti
         self.after_id = None
     
@@ -88,13 +81,9 @@ class PythonitaGUI3D:
         tk.Label(frame_controlli, text="Pythonita IA - Visualizzatore 3D Robot",
                 font=('Arial', 14, 'bold'), bg='#2c3e50', fg='white').pack()
         
-        # Frame template e tema
-        frame_settings = tk.Frame(frame_controlli, bg='#2c3e50')
-        frame_settings.pack(pady=5)
-        
-        # Template selector
-        frame_template = tk.Frame(frame_settings, bg='#2c3e50')
-        frame_template.pack(side=tk.LEFT, padx=20)
+        # Frame template
+        frame_template = tk.Frame(frame_controlli, bg='#2c3e50')
+        frame_template.pack(pady=5)
         
         tk.Label(frame_template, text="Template:", bg='#2c3e50', fg='white',
                 font=('Arial', 10)).pack(side=tk.LEFT, padx=5)
@@ -109,30 +98,6 @@ class PythonitaGUI3D:
                               bg='#2c3e50', fg='white', selectcolor='#34495e',
                               font=('Arial', 9))
             rb.pack(side=tk.LEFT, padx=5)
-        
-        # Theme selector
-        if THEMES_AVAILABLE:
-            frame_theme = tk.Frame(frame_settings, bg='#2c3e50')
-            frame_theme.pack(side=tk.LEFT, padx=20)
-            
-            tk.Label(frame_theme, text="Tema:", bg='#2c3e50', fg='white',
-                    font=('Arial', 10)).pack(side=tk.LEFT, padx=5)
-            
-            self.theme_var = tk.StringVar(value=self.theme_manager.current_theme_name)
-            
-            theme_options = {
-                'light': '☀️ Light',
-                'dark': '🌙 Dark',
-                'high_contrast': '🔆 High Contrast'
-            }
-            
-            for theme_key, theme_label in theme_options.items():
-                rb = tk.Radiobutton(frame_theme, text=theme_label,
-                                  variable=self.theme_var, value=theme_key,
-                                  command=self._cambia_tema,
-                                  bg='#2c3e50', fg='white', selectcolor='#34495e',
-                                  font=('Arial', 9))
-                rb.pack(side=tk.LEFT, padx=3)
         
         # Frame principale: 3 colonne
         frame_main = tk.Frame(self.root)
@@ -556,78 +521,6 @@ class PythonitaGUI3D:
     def _cambia_template(self):
         """Cambia template."""
         self._aggiorna_codice()
-    
-    def _cambia_tema(self):
-        """Cambia tema GUI."""
-        if not THEMES_AVAILABLE:
-            return
-        
-        nuovo_tema = self.theme_var.get()
-        self.theme_manager.set_theme(nuovo_tema)
-        
-        # Applica tema a tutti i widget
-        self._applica_tema()
-        
-        # Feedback
-        if self.status_bar:
-            self.status_bar.set_text(f"✨ Tema cambiato: {nuovo_tema}")
-    
-    def _applica_tema(self):
-        """Applica tema corrente a tutta la GUI."""
-        if not THEMES_AVAILABLE:
-            return
-        
-        tema = self.theme_manager.get_theme()
-        
-        try:
-            # Root window
-            self.root.config(bg=tema.bg_primary)
-            
-            # Text widgets
-            if hasattr(self, 'input_box'):
-                self.input_box.config(
-                    bg=tema.input_bg,
-                    fg=tema.input_fg,
-                    insertbackground=tema.fg_primary
-                )
-            
-            if hasattr(self, 'output_box'):
-                self.output_box.config(
-                    bg=tema.output_bg,
-                    fg=tema.output_fg,
-                    insertbackground=tema.fg_primary
-                )
-            
-            # Status label
-            if hasattr(self, 'status_label'):
-                self.status_label.config(
-                    bg=tema.status_bg,
-                    fg=tema.status_fg
-                )
-            
-            # Aggiorna matplotlib per tema scuro/chiaro
-            if tema.bg_primary == '#1E1E1E' or tema.bg_primary == '#000000':  # Dark themes
-                self.fig.patch.set_facecolor('#2D2D30')
-                self.ax.set_facecolor('#1E1E1E')
-                self.ax.xaxis.label.set_color(tema.fg_primary)
-                self.ax.yaxis.label.set_color(tema.fg_primary)
-                self.ax.zaxis.label.set_color(tema.fg_primary)
-                self.ax.tick_params(colors=tema.fg_primary)
-            else:  # Light theme
-                self.fig.patch.set_facecolor('white')
-                self.ax.set_facecolor('#f0f0f0')
-                self.ax.xaxis.label.set_color(tema.fg_primary)
-                self.ax.yaxis.label.set_color(tema.fg_primary)
-                self.ax.zaxis.label.set_color(tema.fg_primary)
-                self.ax.tick_params(colors=tema.fg_primary)
-            
-            # Ridisegna canvas
-            self.canvas.draw()
-            
-            print(f"[THEME] Tema applicato: {self.theme_manager.current_theme_name}")
-            
-        except Exception as e:
-            print(f"[THEME] Errore applicazione tema: {e}")
 
 
 def main():
