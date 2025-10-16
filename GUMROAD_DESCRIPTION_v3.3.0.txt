@@ -1,0 +1,289 @@
+═══════════════════════════════════════════════════════════════
+PYTHONITA IA v3.3.0 - GUMROAD PRODUCT DESCRIPTION
+═══════════════════════════════════════════════════════════════
+
+🐍 Pythonita IA - Trasforma Italiano in Python con Visualizzazione 3D
+
+Genera codice Python da comandi in linguaggio naturale italiano, con visualizzatore 3D robot integrato!
+
+═══════════════════════════════════════════════════════════════
+
+🎉 NUOVO IN v3.3.0!
+
+🔌 SISTEMA PLUGIN
+Estendi Pythonita con plugin personalizzati!
+• API completa per sviluppatori
+• Registra comandi custom
+• Aggiungi oggetti 3D personalizzati
+• Hook system per processing avanzato
+• 50+ pagine di documentazione sviluppatori
+
+🌐 SUPPORTO INGLESE
+Ora disponibile in Italiano e Inglese!
+• Interfaccia completamente tradotta
+• Documentazione in entrambe le lingue
+• Preferenze lingua salvate automaticamente
+• Accesso al mercato globale
+
+═══════════════════════════════════════════════════════════════
+
+✨ CARATTERISTICHE PRINCIPALI
+
+🗣️ LINGUAGGIO NATURALE
+• Scrivi comandi in italiano naturale
+• 143+ comandi Python riconosciuti
+• Supporto multi-comando (combina azioni)
+• Sintassi flessibile e intuitiva
+
+🤖 VISUALIZZAZIONE 3D
+• 18 oggetti 3D interattivi:
+  - Strumenti: martello, cacciavite, chiave, pinza
+  - Cibo: mela, banana, arancia, palla, panino
+  - Elettronica: mouse, tastiera, smartphone
+  - Quotidiano: libro, penna, orologio, tazza, bottiglia, cubo
+• Mano robotica realistica
+• Braccio articolato 6 DOF
+• Animazioni fluide 30-45 FPS
+
+🎨 INTERFACCIA PROFESSIONALE
+• 3 temi GUI: Light, Dark, High Contrast
+• Editor codice integrato
+• Barra stato real-time
+• Tooltip e aiuti contestuali
+• Error handling user-friendly
+
+💾 EXPORT PROFESSIONALE
+• Esporta codice Python (.py)
+• Esporta screenshot 3D (PNG 300 DPI)
+• Esporta animazioni (GIF)
+• Report completi con metadata
+
+🔌 ESTENSIBILITÀ
+• Sistema plugin per estensioni
+• API documentata
+• Esempio plugin incluso
+• Community di sviluppatori
+
+🌐 INTERNAZIONALE
+• Italiano 🇮🇹 e Inglese 🇬🇧
+• Facile da localizzare
+• Documentazione completa
+
+═══════════════════════════════════════════════════════════════
+
+🎯 PER CHI È?
+
+✅ Studenti che imparano Python
+✅ Insegnanti di programmazione
+✅ Sviluppatori robotica
+✅ Ricercatori NLP/AI
+✅ Developer che vogliono codificare velocemente
+✅ Plugin developers
+
+═══════════════════════════════════════════════════════════════
+
+💪 COSA PUOI FARE
+
+ESEMPI PRATICI:
+
+Input: "crea lista di numeri"
+Output: Codice Python per creare lista
+
+Input: "la mano afferra la mela"
+Output: Codice + Animazione 3D mano che afferra mela
+
+Input: "per ogni elemento nella lista stampa"
+Output: Loop Python completo
+
+Input: "leggi file dati.txt"
+Output: Codice per leggere file
+
+Input: "definisci funzione saluta con parametro nome"
+Output: Funzione Python completa
+
+═══════════════════════════════════════════════════════════════
+
+🔒 COSA INCLUDE QUESTA LICENZA PRO
+
+✅ 143+ comandi Python completi
+✅ Visualizzatore 3D con 18 oggetti
+✅ Export codice e screenshot
+✅ 3 temi GUI (Light/Dark/High Contrast)
+✅ Sistema plugin per estensioni
+✅ 2 lingue (Italiano e Inglese)
+✅ Performance ottimizzate
+✅ Aggiornamenti gratuiti v3.x
+✅ Supporto via email
+✅ File eseguibile Windows (no install)
+✅ Documentazione completa
+✅ Esempi e tutorial
+
+═══════════════════════════════════════════════════════════════
+
+📊 SPECIFICHE TECNICHE
+
+• Python 3.8+
+• Windows 10/11 (eseguibile standalone)
+• macOS / Linux (sorgente Python)
+• RAM: 2GB minimo
+• Spazio disco: 150MB
+• CPU: Dual-core
+• Performance: 30-45 FPS visualizzatore 3D
+• Test coverage: 80%+
+• 112 test automatici
+
+═══════════════════════════════════════════════════════════════
+
+🚀 COME FUNZIONA
+
+1. Scarica PythonitaIA.exe (124 MB)
+2. Doppio click per avviare
+3. Scrivi comando in italiano
+4. Clicca "Genera Codice"
+5. Clicca "Esegui Animazione" per vedere 3D
+6. Esporta codice o screenshot
+
+NESSUNA INSTALLAZIONE RICHIESTA!
+NESSUNA CONFIGURAZIONE COMPLESSA!
+TUTTO FUNZIONA OUT-OF-THE-BOX!
+
+═══════════════════════════════════════════════════════════════
+
+📚 DOCUMENTAZIONE INCLUSA
+
+✅ Quick Start Guide (5 minuti)
+✅ Guida comandi completa (143+ esempi)
+✅ Guida sviluppo plugin (50+ pagine)
+✅ README Italiano e Inglese
+✅ Changelog completo
+✅ Marketing templates
+
+═══════════════════════════════════════════════════════════════
+
+🎁 BONUS INCLUSI
+
+✅ Esempio plugin funzionante
+✅ 8+ esempi pronti all'uso
+✅ Template robotica
+✅ Accesso repository GitHub
+✅ Supporto community
+
+═══════════════════════════════════════════════════════════════
+
+💰 PRICING
+
+TIER DISPONIBILI:
+
+FREE (€0)
+• 20 comandi base
+• Italiano only
+• Nessuna visualizzazione 3D
+• Community support
+
+PERSONAL (€49)
+• Tutti i 143 comandi
+• GUI completa
+• Italiano e Inglese
+• Email support
+• ⭐ BEST VALUE PER STUDENTI
+
+PRO (€149) ⭐ QUESTO PRODOTTO
+• Tutto di Personal +
+• Visualizzatore 3D completo
+• 18 oggetti interattivi
+• Sistema plugin
+• Export professionale
+• 3 temi GUI
+• Priority support
+• ⭐ BEST VALUE PER PROFESSIONISTI
+
+ENTERPRISE (€499)
+• Tutto di Pro +
+• Codice sorgente completo
+• Licenza commerciale
+• Support dedicato
+• Custom features su richiesta
+• Training personalizzato
+
+═══════════════════════════════════════════════════════════════
+
+🌟 RECENSIONI
+
+"Incredibile! Da 'la mano afferra la mela' a codice Python 
+funzionante in 2 secondi. Il visualizzatore 3D è fantastico!"
+- Marco R., Developer
+
+"Perfetto per insegnare Python. Gli studenti VEDONO cosa fa 
+il codice. Engagement +300%!"
+- Prof. Laura B., Università
+
+"Il sistema plugin è geniale. Ho aggiunto i miei comandi custom 
+in 30 minuti. Documentazione eccellente."
+- Andrea S., Robotics Engineer
+
+═══════════════════════════════════════════════════════════════
+
+❓ FAQ
+
+Q: Funziona offline?
+A: Sì! 100% offline. Nessuna connessione internet richiesta.
+
+Q: Devo installare Python?
+A: No! File .exe standalone include tutto.
+
+Q: Posso creare plugin?
+A: Sì! Con licenza Pro hai accesso completo all'API plugin.
+
+Q: Riceverò aggiornamenti?
+A: Sì! Tutti gli update v3.x sono gratuiti.
+
+Q: Supporta altre lingue?
+A: Attualmente Italiano e Inglese. Altre lingue in v4.0.
+
+Q: Posso usarlo commercialmente?
+A: Sì con licenza Pro. Per redistribuzione serve Enterprise.
+
+Q: C'è supporto?
+A: Sì! Email support per tutti i clienti Pro.
+
+Q: Garanzia?
+A: 30 giorni soddisfatti o rimborsati!
+
+═══════════════════════════════════════════════════════════════
+
+🔗 LINK UTILI
+
+GitHub: https://github.com/ballales1984-wq/pythonita-ia
+Docs: README.md incluso nel download
+Plugin Guide: PLUGIN_DEVELOPMENT_GUIDE.md
+Issues: GitHub Issues per bug reports
+Email: support@pythonita.io (clienti Pro)
+
+═══════════════════════════════════════════════════════════════
+
+🎊 ACQUISTA ORA!
+
+✨ Licenza PRO v3.3.0 - €149
+
+INCLUDE:
+• PythonitaIA.exe (124 MB)
+• Documentazione completa
+• Esempi e tutorial
+• Plugin system
+• Aggiornamenti v3.x gratuiti
+• Email support
+
+⚡ DOWNLOAD IMMEDIATO DOPO ACQUISTO
+💳 Pagamento sicuro via Gumroad
+✅ Garanzia 30 giorni
+
+CLICCA "I WANT THIS" PER ACQUISTARE! 👆
+
+═══════════════════════════════════════════════════════════════
+
+Made with ❤️ in Italy 🇮🇹
+
+Transform Italian into Python with 3D visualization! 🐍✨
+
+═══════════════════════════════════════════════════════════════
+

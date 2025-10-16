@@ -1,0 +1,236 @@
+╔══════════════════════════════════════════════════════════════════╗
+║                                                                  ║
+║              📍 DOVE TROVARE IL PROGRAMMA - GUIDA                ║
+║                                                                  ║
+╚══════════════════════════════════════════════════════════════════╝
+
+VERSIONE: v3.3.0
+DATA: 16 Ottobre 2025
+
+═══════════════════════════════════════════════════════════════════
+
+🎯 ESEGUIBILE PRINCIPALE
+
+POSIZIONE:
+📁 C:\Users\user\pythonita-ia\dist\PythonitaIA.exe
+
+DIMENSIONE: 124 MB
+TIPO: Windows Executable (.exe)
+STANDALONE: Sì (non serve installazione)
+
+═══════════════════════════════════════════════════════════════════
+
+🚀 COME AVVIARE IL PROGRAMMA
+
+OPZIONE 1: DOPPIO CLICK (PIÙ SEMPLICE)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Apri Esplora File
+2. Vai a: C:\Users\user\pythonita-ia\dist\
+3. Trova: PythonitaIA.exe
+4. Doppio click su PythonitaIA.exe
+5. Il programma si avvia!
+
+
+OPZIONE 2: DA TERMINALE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Apri PowerShell nella cartella del progetto e digita:
+
+.\dist\PythonitaIA.exe
+
+
+OPZIONE 3: SCRIPT AVVIO VELOCE (BATCH)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Usa lo script già presente:
+
+1. Vai a: C:\Users\user\pythonita-ia\
+2. Doppio click su: AVVIA.bat
+
+Questo script avvia automaticamente l'eseguibile!
+
+
+OPZIONE 4: VERSIONE PYTHON (SVILUPPATORI)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Se preferisci usare il codice sorgente Python:
+
+python gui_robot_3d.py
+
+Richiede:
+- Python 3.8+
+- Dependencies installate (pip install -r requirements.txt)
+- spaCy modello italiano (python -m spacy download it_core_news_sm)
+
+═══════════════════════════════════════════════════════════════════
+
+📂 STRUTTURA FILE IMPORTANTE
+
+pythonita-ia/
+├── dist/
+│   └── PythonitaIA.exe          ⭐ ESEGUIBILE PRINCIPALE
+│
+├── AVVIA.bat                    ⭐ SCRIPT AVVIO VELOCE
+├── gui_robot_3d.py              ⭐ VERSIONE PYTHON SORGENTE
+│
+├── README.md                    📄 Documentazione italiana
+├── README_EN.md                 📄 Documentazione inglese
+├── QUICK_START.md               📄 Guida rapida 5 minuti
+├── PLUGIN_DEVELOPMENT_GUIDE.md  📄 Guida plugin 50+ pagine
+├── CHANGELOG.md                 📄 Storia versioni
+│
+├── examples/                    📁 Esempi codice
+├── tests/                       📁 Test automatici
+├── pythonita/                   📁 Package principale
+└── visualizzatore/              📁 Visualizzatore 3D
+
+═══════════════════════════════════════════════════════════════════
+
+🖥️ CREA SCORCIATOIA SUL DESKTOP
+
+WINDOWS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Vai a: C:\Users\user\pythonita-ia\dist\
+2. Click destro su PythonitaIA.exe
+3. "Invia a" → "Desktop (crea collegamento)"
+4. Ora hai l'icona sul desktop! 🎯
+
+Oppure rinomina il collegamento in "Pythonita IA v3.3.0"
+
+═══════════════════════════════════════════════════════════════════
+
+💾 COPIARE ESEGUIBILE ALTROVE
+
+Se vuoi spostare l'eseguibile:
+
+1. Copia: C:\Users\user\pythonita-ia\dist\PythonitaIA.exe
+2. Incolla dove vuoi (Desktop, Documenti, USB, etc)
+3. L'exe è STANDALONE, funziona ovunque!
+
+NOTA: Non serve copiare altro, solo il file .exe!
+
+═══════════════════════════════════════════════════════════════════
+
+📦 DISTRIBUZIONE / VENDITA
+
+Se vuoi distribuire o vendere il programma:
+
+FILE DA INCLUDERE:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+MINIMO (solo eseguibile):
+  📦 PythonitaIA.exe (124 MB)
+
+CONSIGLIATO (con documentazione):
+  📦 PythonitaIA.exe
+  📄 README.md o README_EN.md
+  📄 QUICK_START.md
+  📄 LICENSE
+
+COMPLETO (tutto):
+  📦 PythonitaIA.exe
+  📄 Tutta la documentazione (*.md)
+  📁 examples/ (esempi)
+  📄 requirements.txt (per sviluppatori)
+
+DOVE CARICARE:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ Gumroad: https://gumroad.com (già configurato)
+✅ GitHub Releases: come asset del tag v3.3.0
+✅ Google Drive / Dropbox: per clienti diretti
+✅ Itch.io: marketplace alternativo
+
+═══════════════════════════════════════════════════════════════════
+
+🔄 AGGIORNARE L'ESEGUIBILE
+
+Se modifichi il codice e vuoi ricreare l'exe:
+
+1. Apri PowerShell nella cartella progetto
+2. Esegui: .\build_exe_completo.bat
+3. Attendi 2-5 minuti
+4. Nuovo exe sarà in: dist\PythonitaIA.exe
+
+═══════════════════════════════════════════════════════════════════
+
+🐛 TROUBLESHOOTING
+
+PROBLEMA: "Windows protected your PC"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SOLUZIONE:
+1. Clicca "More info"
+2. Clicca "Run anyway"
+
+Questo è normale per exe non firmati digitalmente.
+
+
+PROBLEMA: Exe non si avvia
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SOLUZIONI:
+1. Verifica che sia in: dist\PythonitaIA.exe
+2. Verifica che file sia 120-130 MB
+3. Prova a eseguire come amministratore
+4. Controlla antivirus (potrebbe bloccarlo)
+5. Usa versione Python: python gui_robot_3d.py
+
+
+PROBLEMA: Manca spaCy modello
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SOLUZIONE (solo per versione Python):
+python -m spacy download it_core_news_sm
+
+L'exe ha già tutto incluso!
+
+
+PROBLEMA: Errore librerie mancanti
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SOLUZIONE:
+L'exe è standalone, non servono librerie!
+Se usi Python: pip install -r requirements.txt
+
+═══════════════════════════════════════════════════════════════════
+
+💡 TIPS
+
+✅ Crea collegamento sul desktop per accesso veloce
+✅ Aggiungi a "Start Menu" per trovarlo facilmente
+✅ Pin to taskbar per avvio con 1 click
+✅ Usa AVVIA.bat se hai problemi con doppio click
+✅ Tieni backup dell'exe in caso di aggiornamenti
+
+═══════════════════════════════════════════════════════════════════
+
+📞 SUPPORTO
+
+Se hai problemi:
+
+1. Leggi QUICK_START.md (risolve 90% problemi)
+2. Controlla GitHub Issues
+3. Email: support@pythonita.io (clienti Pro)
+4. Discord: [link community]
+
+═══════════════════════════════════════════════════════════════════
+
+🎊 PRONTO!
+
+Ora sai dove trovare e come avviare Pythonita IA! 🚀
+
+AVVIO VELOCE:
+1. Vai a: C:\Users\user\pythonita-ia\dist\
+2. Doppio click: PythonitaIA.exe
+3. Enjoy! ✨
+
+═══════════════════════════════════════════════════════════════════
+
+Made with ❤️ in Italy 🇮🇹
+Pythonita IA v3.3.0 - Ready to Use! 🐍✨
+
+═══════════════════════════════════════════════════════════════════
+
