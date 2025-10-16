@@ -288,8 +288,7 @@ class PythonitaGUI3D:
         self.input_box = scrolledtext.ScrolledText(frame, height=15, width=35,
                                                    font=('Consolas', 10), wrap=tk.WORD)
         self.input_box.pack(fill=tk.BOTH, expand=True, pady=5)
-        # Auto-genera codice mentre scrivi (con debounce 300ms per evitare lag)
-        self.input_box.bind('<KeyRelease>', self._on_key_release)
+        # NON auto-genera più - solo con pulsante
         
         # Esempi rapidi
         tk.Label(frame, text="Esempi Rapidi:", font=('Arial', 9, 'bold')).pack(anchor='w', pady=(10,5))
@@ -316,6 +315,15 @@ class PythonitaGUI3D:
                           command=lambda c=comando: self._inserisci_esempio(c),
                           font=('Arial', 8), bg='#3498db', fg='white')
             btn.pack(fill=tk.X, pady=2)
+        
+        # PULSANTE GENERA CODICE CON AI
+        tk.Label(frame, text="", font=('Arial', 1)).pack(pady=2)  # Spazio
+        btn_genera = tk.Button(frame, text="🤖 GENERA CODICE CON AI", 
+                              command=self._genera_codice_con_ai,
+                              font=('Arial', 10, 'bold'), 
+                              bg='#2ecc71', fg='white',
+                              relief=tk.RAISED, bd=3)
+        btn_genera.pack(fill=tk.X, pady=5, ipady=8)
     
     def _setup_colonna_codice(self, parent):
         """Setup colonna codice."""
@@ -405,19 +413,32 @@ class PythonitaGUI3D:
         self._aggiorna_codice()
     
     def _inserisci_esempio(self, comando):
-        """Inserisce esempio nel box input e genera automaticamente."""
+        """Inserisce esempio nel box input."""
         self.input_box.delete('1.0', tk.END)
         self.input_box.insert('1.0', comando)
-        self._aggiorna_codice()  # Genera subito per gli esempi
+        # NON genera automaticamente - utente preme pulsante
+    
+    def _genera_codice_con_ai(self):
+        """Genera codice con AI quando utente preme il pulsante."""
+        frase = self.input_box.get('1.0', tk.END).strip()
+        
+        if not frase:
+            messagebox.showwarning("Input vuoto", "Scrivi prima un comando in italiano!")
+            return
+        
+        # Feedback visivo
+        self.status_var.set("🤖 AI sta generando codice...")
+        self.root.update_idletasks()
+        
+        # Genera con AI
+        self._aggiorna_codice()
+        
+        # Feedback successo
+        self.status_var.set(f"✅ Codice generato per: '{frase}'")
     
     def _on_key_release(self, event):
-        """Auto-genera codice dopo una pausa nella scrittura."""
-        # Cancella timer precedente
-        if hasattr(self, '_key_timer'):
-            self.root.after_cancel(self._key_timer)
-        
-        # Avvia nuovo timer (800ms di pausa = auto-genera) - aumentato per stabilità
-        self._key_timer = self.root.after(800, self._aggiorna_codice)
+        """[RIMOSSO] Non auto-genera più."""
+        pass
     
     def _aggiorna_codice(self):
         """Aggiorna codice generato."""
