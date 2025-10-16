@@ -1,0 +1,13 @@
+{
+  "project": "ai_face_recognition",
+  "version": "1.0",
+  "components": [
+    "LED",
+    "Sensore",
+    "Arduino"
+  ],
+  "pins": {
+    "LED": 13,
+    "Sensor": "A0"
+  }
+}

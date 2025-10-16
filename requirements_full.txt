@@ -1,0 +1,54 @@
+
+# AI/ML Libraries (pesanti)
+tensorflow==2.15.0  # ~400 MB
+torch==2.1.0  # ~800 MB  
+torchvision==0.16.0  # ~100 MB
+scikit-learn==1.3.2  # ~100 MB
+transformers==4.35.0  # ~200 MB
+
+# Computer Vision
+opencv-python==4.8.1  # ~90 MB
+opencv-contrib-python==4.8.1  # ~200 MB
+pillow==10.1.0
+
+# NLP avanzato
+spacy==3.7.2
+it-core-news-lg @ https://github.com/explosion/spacy-models/releases/download/it_core_news_lg-3.7.0/it_core_news_lg-3.7.0-py3-none-any.whl  # ~560 MB
+
+# Scienza e Calcolo
+scipy==1.11.4  # ~150 MB
+pandas==2.1.3
+statsmodels==0.14.0
+sympy==1.12
+
+# 3D e Grafica
+vtk==9.3.0  # ~300 MB
+mayavi==4.8.1
+pygame==2.5.2
+
+# Hardware
+pyserial==3.5
+pyusb==1.2.1
+pybluez==0.30
+
+# Audio/Video
+librosa==0.10.1
+soundfile==0.12.1
+moviepy==1.0.3
+
+# Web e Network
+requests==2.31.0
+beautifulsoup4==4.12.2
+selenium==4.15.0
+
+# Database
+sqlalchemy==2.0.23
+pymongo==4.6.0
+
+# Esistenti
+numpy>=1.24.0
+matplotlib>=3.7.0
+ollama>=0.1.0
+speech_recognition>=3.10.0
+pyaudio>=0.2.13
+pocketsphinx>=5.0.0

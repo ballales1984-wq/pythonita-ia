@@ -1,0 +1,13 @@
+{
+  "project": "progetto_49",
+  "version": "1.0",
+  "components": [
+    "LED",
+    "Sensore",
+    "Arduino"
+  ],
+  "pins": {
+    "LED": 13,
+    "Sensor": "A0"
+  }
+}
