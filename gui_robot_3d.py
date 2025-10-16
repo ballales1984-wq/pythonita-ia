@@ -206,15 +206,29 @@ class PythonitaGUI3D:
         tk.Label(header_frame, text="Comando in Italiano",
                 font=('Arial', 11, 'bold')).pack(side=tk.LEFT)
         
-        # Pulsante registrazione vocale
+        # Pulsanti registrazione vocale (RECORD e STOP separati)
         if SPEECH_RECOGNITION_AVAILABLE:
-            self.btn_voice = tk.Button(header_frame, text="🎤 Registra",
-                                      command=self._registra_vocale,
-                                      font=('Arial', 9), bg='#e74c3c', fg='white',
-                                      relief=tk.RAISED, bd=2)
-            self.btn_voice.pack(side=tk.RIGHT, padx=5)
+            voice_frame = tk.Frame(header_frame, bg='#2c3e50')
+            voice_frame.pack(side=tk.RIGHT, padx=5)
+            
+            self.btn_record = tk.Button(voice_frame, text="🔴 REC",
+                                       command=self._avvia_registrazione,
+                                       font=('Arial', 9, 'bold'), bg='#e74c3c', fg='white',
+                                       relief=tk.RAISED, bd=2, width=6)
+            self.btn_record.pack(side=tk.LEFT, padx=2)
+            
+            self.btn_stop = tk.Button(voice_frame, text="⬛ STOP",
+                                     command=self._ferma_registrazione,
+                                     font=('Arial', 9, 'bold'), bg='#95a5a6', fg='white',
+                                     relief=tk.RAISED, bd=2, width=6, state='disabled')
+            self.btn_stop.pack(side=tk.LEFT, padx=2)
+            
+            # Stato registrazione
+            self.recording = False
+            self.recording_thread = None
             if UX_IMPROVEMENTS_AVAILABLE:
-                add_tooltip(self.btn_voice, "Registra comando vocale (5 secondi)")
+                add_tooltip(self.btn_record, "Avvia registrazione vocale")
+                add_tooltip(self.btn_stop, "Ferma registrazione")
         
         self.input_box = scrolledtext.ScrolledText(frame, height=15, width=35,
                                                    font=('Consolas', 10), wrap=tk.WORD)
@@ -700,47 +714,97 @@ class PythonitaGUI3D:
         except Exception as e:
             print(f"[THEME] Errore applicazione tema: {e}")
     
-    def _registra_vocale(self):
-        """Registra comando vocale e lo inserisce nell'input."""
+    def _avvia_registrazione(self):
+        """Avvia registrazione vocale con feedback immediato."""
         if not SPEECH_RECOGNITION_AVAILABLE or not self.speech_recognizer:
             messagebox.showwarning("Funzione Non Disponibile",
                                   "Speech recognition non installato.\nInstalla: pip install SpeechRecognition pyaudio")
             return
         
+        if self.recording:
+            return  # Già in registrazione
+        
         try:
-            # Cambia colore pulsante (registrazione in corso)
-            if hasattr(self, 'btn_voice'):
-                self.btn_voice.config(bg='#c0392b', text='🔴 Registrando...')
-                self.root.update()
+            self.recording = True
             
-            # Status update
-            if self.status_bar:
-                self.status_bar.set_busy("Registrando audio... Parla ora!")
-            self.status_var.set("🎤 Registrando...")
+            # Aggiorna UI immediatamente
+            self.btn_record.config(state='disabled', bg='#7f8c8d')
+            self.btn_stop.config(state='normal', bg='#c0392b')
+            self.status_var.set("⏳ Calibrando microfono...")
+            self.root.update()
             
             # Esegui riconoscimento in thread separato
             def riconosci():
-                success, text = self.speech_recognizer.listen_from_microphone(timeout=5, phrase_time_limit=10)
+                import speech_recognition as sr
+                import time
                 
-                # Update UI in main thread
-                self.root.after(0, lambda: self._on_voice_result(success, text))
+                try:
+                    with sr.Microphone() as source:
+                        # Fase 1: Calibrazione (0.7 secondi)
+                        self.root.after(0, lambda: self.status_var.set("⏳ Calibrando... (0.7s)"))
+                        self.speech_recognizer.recognizer.adjust_for_ambient_noise(source, duration=0.7)
+                        
+                        # Fase 2: PRONTO - ora puoi parlare!
+                        self.root.after(0, lambda: self.status_var.set("🔴 PARLA ORA! (dì il comando)"))
+                        self.root.after(0, lambda: self.btn_stop.config(bg='#e74c3c'))
+                        
+                        # Fase 3: Ascolto (max 10 secondi)
+                        if not self.recording:  # Check se stop premuto durante calibrazione
+                            return
+                        
+                        audio = self.speech_recognizer.recognizer.listen(
+                            source, 
+                            timeout=15,  # Aspetta fino a 15s prima che inizi a parlare
+                            phrase_time_limit=10  # Max 10s di parlato
+                        )
+                        
+                        if not self.recording:  # Check se stop premuto durante ascolto
+                            return
+                        
+                        # Fase 4: Riconoscimento
+                        self.root.after(0, lambda: self.status_var.set("🔄 Riconoscendo..."))
+                        text = self.speech_recognizer._recognize_audio(audio)
+                        
+                        # Risultato
+                        if text:
+                            self.root.after(0, lambda: self._on_voice_result(True, text))
+                        else:
+                            self.root.after(0, lambda: self._on_voice_result(False, "Nessun testo riconosciuto"))
+                
+                except sr.WaitTimeoutError:
+                    self.root.after(0, lambda: self._on_voice_result(False, "Timeout: nessun audio rilevato"))
+                except Exception as e:
+                    self.root.after(0, lambda: self._on_voice_result(False, f"Errore: {e}"))
+                finally:
+                    self.recording = False
+                    self.root.after(0, self._reset_recording_buttons)
             
-            thread = threading.Thread(target=riconosci)
-            thread.start()
+            self.recording_thread = threading.Thread(target=riconosci, daemon=True)
+            self.recording_thread.start()
             
         except Exception as e:
+            self.recording = False
             messagebox.showerror("Errore Registrazione", f"Errore durante registrazione:\n{e}")
-            if self.status_bar:
-                self.status_bar.set_error("Errore registrazione vocale")
-            # Ripristina pulsante
-            if hasattr(self, 'btn_voice'):
-                self.btn_voice.config(bg='#e74c3c', text='🎤 Registra')
+            self._reset_recording_buttons()
+    
+    def _ferma_registrazione(self):
+        """Ferma la registrazione in corso."""
+        self.recording = False
+        self.status_var.set("⏹️ Registrazione fermata")
+        self._reset_recording_buttons()
+    
+    def _reset_recording_buttons(self):
+        """Ripristina stato pulsanti registrazione."""
+        if hasattr(self, 'btn_record'):
+            self.btn_record.config(state='normal', bg='#e74c3c')
+        if hasattr(self, 'btn_stop'):
+            self.btn_stop.config(state='disabled', bg='#95a5a6')
     
     def _on_voice_result(self, success, text):
         """Callback con risultato riconoscimento vocale."""
-        # Ripristina pulsante
-        if hasattr(self, 'btn_voice'):
-            self.btn_voice.config(bg='#e74c3c', text='🎤 Registra')
+        # Ripristina pulsanti
+        self._reset_recording_buttons()
+        self.recording = False
         
         if success:
             # Inserisci testo riconosciuto
