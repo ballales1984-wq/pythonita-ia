@@ -213,7 +213,13 @@ Codice Python:"""
             
             risposta = ollama.chat(
                 model='llama3.2',
-                messages=[{'role': 'user', 'content': prompt_base}]
+                messages=[{'role': 'user', 'content': prompt_base}],
+                options={
+                    'num_predict': 256,      # Max 256 token (era illimitato)
+                    'temperature': 0.3,      # Più deterministico
+                    'top_p': 0.9,           # Ridotto per velocità
+                    'num_ctx': 2048,        # Contesto ridotto (era 4096)
+                }
             )
             
             codice = risposta['message']['content'].strip()
@@ -244,7 +250,13 @@ Codice Python:"""
             
             risposta = ollama.chat(
                 model='llama3.2',
-                messages=[{'role': 'user', 'content': prompt}]
+                messages=[{'role': 'user', 'content': prompt}],
+                options={
+                    'num_predict': 512,      # Max 512 token per comandi complessi
+                    'temperature': 0.3,      # Più deterministico
+                    'top_p': 0.9,           # Ridotto per velocità
+                    'num_ctx': 2048,        # Contesto ridotto (era 4096)
+                }
             )
             
             codice = risposta['message']['content'].strip()
