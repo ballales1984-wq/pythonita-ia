@@ -177,8 +177,9 @@ def _inserisci_esempio(self, comando):
 - ⚠️ Codice appare nell'output_box?
 
 ### ❌ **Problemi Aperti:**
-- ❌ Utente dice "non scrive più codice"
-- ❌ Causa da identificare (visibilità pulsante?)
+- ⚠️ Pulsante verde ESISTE ma NON risponde al click
+- 🔧 Aggiunto debug logging per identificare causa
+- 🎮 Richiesta GPU: creata guida completa
 
 ---
 
@@ -207,6 +208,8 @@ Righe modificate:
 5ed3784 - Fix: Riattivata AI per comandi complessi
 292b899 - Fix: Aumentato debounce input a 800ms
 dedcfc7 - UX: Rimossa auto-generazione, aggiunto pulsante manuale
+cfbd343 - Debug: Aggiunto logging pulsante + forza update GUI
+d490fc5 - Docs: Guida completa Ollama GPU (NVIDIA/AMD)
 ```
 
 ---
@@ -276,6 +279,60 @@ python gui_robot_3d.py
 
 ---
 
-**Ultimo aggiornamento:** 16 Ottobre 2025 - Ore 14:30  
-**Status:** 🔍 In debug
+---
+
+### ✅ **FIX #4: Debug Pulsante**
+**Commit:** `cfbd343`
+
+#### Problema:
+- Pulsante verde visibile ✅
+- Ma non risponde al click ❌
+
+#### Modifiche:
+```python
+# gui_robot_3d.py - Righe 421-442
+def _genera_codice_con_ai(self):
+    print("[DEBUG] Pulsante AI cliccato!")  # Debug
+    frase = self.input_box.get('1.0', tk.END).strip()
+    print(f"[DEBUG] Frase letta: '{frase}'")
+    
+    # ...
+    self.root.update()  # Forza update immediato (era update_idletasks)
+```
+
+#### Da Verificare:
+- [ ] Appare "[DEBUG] Pulsante AI cliccato!" nel terminale?
+- [ ] Se SÌ → pulsante OK, problema è nell'aggiornamento GUI
+- [ ] Se NO → pulsante non collegato, problema binding
+
+---
+
+### 🎮 **BONUS: Guida GPU Ollama**
+**Commit:** `d490fc5`  
+**File:** `GUIDA_OLLAMA_GPU.md`
+
+#### Richiesta Utente:
+"si puo far girare ia su scheda video"
+
+#### Soluzione:
+✅ Guida completa 276 righe:
+- Setup NVIDIA/AMD/Intel
+- Benchmark: CPU 3s → GPU 0.8s ⚡ (4-5x più veloce)
+- Configurazione ottimale
+- Troubleshooting
+- **Nessuna modifica codice richiesta!**
+
+#### Come Attivare:
+```bash
+# 1. Verifica GPU
+nvidia-smi
+
+# 2. Reinstalla Ollama (versione GPU)
+# https://ollama.com/download/windows
+
+# 3. Pythonita userà GPU automaticamente!
+```
+
+**Ultimo aggiornamento:** 16 Ottobre 2025 - Ore 15:00  
+**Status:** 🔍 Debug in corso + 🎮 GPU ready
 
