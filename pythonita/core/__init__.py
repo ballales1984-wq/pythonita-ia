@@ -1,18 +1,55 @@
 """
-Core business logic di Pythonita IA.
-Parser NLP + Code Generator + AI Engine.
+Core package di Pythonita.
+Contiene i moduli fondamentali per il parsing e la generazione di codice.
 """
 
-from .nlp_parser import ItalianNLPParser, parse_italian
-from .code_generator import CodeGenerator, generate_code
-from .command_registry import CommandRegistry, get_command
+from .parser import ParserItaliano, get_parser, analizza_frase
+from .generatore import GeneratoreCodice, get_generatore, genera_codice
+from .cache import CacheManager, get_cache
+from .validator import InputValidator, get_validator, validate_input, ValidationResult
+from .comandi_python import (
+    COMANDI_PYTHON,
+    BUILTIN_FUNCTIONS,
+    STANDARD_LIBRARY,
+    find_command_by_italian,
+    get_all_commands
+)
+from .linguaggio_naturale import (
+    ParserLinguisticoAvanzato,
+    get_parser_linguistico,
+    analizza_linguaggio,
+    StrutturaLinguistica
+)
+from .template_domini import (
+    SistemaTemplate,
+    get_sistema_template,
+    scegli_template,
+    TemplateRobot,
+    TemplateManiBioniche
+)
+from .multi_comando import (
+    MultiComandoParser,
+    CombinatoreCodice,
+    combina_comandi
+)
 
 __all__ = [
-    'ItalianNLPParser',
-    'parse_italian',
-    'CodeGenerator',
-    'generate_code',
-    'CommandRegistry',
-    'get_command',
+    "ParserItaliano",
+    "get_parser",
+    "analizza_frase",
+    "GeneratoreCodice",
+    "get_generatore",
+    "genera_codice",
+    "CacheManager",
+    "get_cache",
+    "InputValidator",
+    "get_validator",
+    "validate_input",
+    "ValidationResult",
+    "COMANDI_PYTHON",
+    "BUILTIN_FUNCTIONS",
+    "STANDARD_LIBRARY",
+    "find_command_by_italian",
+    "get_all_commands"
 ]
 

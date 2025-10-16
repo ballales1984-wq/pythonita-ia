@@ -4,7 +4,7 @@ Test per i comandi Python estesi (143+).
 
 import pytest
 from core import genera_codice, get_all_commands, find_command_by_italian
-from core.generatore import GeneratoreCodice
+from pythonita.core.generatore import GeneratoreCodice
 
 
 class TestComandiEstesi:

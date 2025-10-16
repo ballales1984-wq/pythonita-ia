@@ -4,7 +4,7 @@ Test per il modulo cache.
 
 import pytest
 import time
-from core.cache import CacheManager, get_cache
+from pythonita.core.cache import CacheManager, get_cache
 
 
 class TestCacheManager:

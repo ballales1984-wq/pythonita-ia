@@ -3,7 +3,7 @@ Test per il sistema multi-comando.
 """
 
 import pytest
-from core.multi_comando import MultiComandoParser, CombinatoreCodice, combina_comandi
+from pythonita.core.multi_comando import MultiComandoParser, CombinatoreCodice, combina_comandi
 
 
 class TestMultiComandoParser:

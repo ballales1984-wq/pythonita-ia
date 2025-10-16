@@ -3,7 +3,7 @@ Test per il modulo validator.
 """
 
 import pytest
-from core.validator import InputValidator, validate_input, ValidationResult, get_validator
+from pythonita.core.validator import InputValidator, validate_input, ValidationResult, get_validator
 
 
 class TestInputValidator:

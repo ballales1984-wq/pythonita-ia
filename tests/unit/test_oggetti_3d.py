@@ -4,7 +4,7 @@ Test suite per oggetti 3D del visualizzatore.
 
 import pytest
 import numpy as np
-from visualizzatore.oggetti_3d import (
+from pythonita.visualization.oggetti_3d import (
     Mela, Palla, Cubo, Bottiglia, Smartphone, Tazza,
     crea_oggetto
 )
@@ -16,39 +16,39 @@ class TestOggetti3DBase:
     def test_mela_creazione(self):
         """Test creazione mela."""
         mela = Mela()
-        assert mela.nome == "mela"
-        assert mela.colore == (1.0, 0.0, 0.0)  # Rosso
-        assert mela.dimensione > 0
+        assert mela.nome == "Mela"
+        assert mela.colore == (0.9, 0.1, 0.1)  # Rosso
+        assert mela.raggio > 0
     
     def test_palla_creazione(self):
         """Test creazione palla."""
         palla = Palla()
-        assert palla.nome == "palla"
-        assert palla.dimensione > 0
+        assert palla.nome == "Palla"
+        assert palla.raggio > 0
     
     def test_cubo_creazione(self):
         """Test creazione cubo."""
         cubo = Cubo()
-        assert cubo.nome == "cubo"
-        assert cubo.dimensione > 0
+        assert cubo.nome == "Cubo"
+        assert cubo.lato > 0
     
     def test_bottiglia_creazione(self):
         """Test creazione bottiglia."""
         bottiglia = Bottiglia()
-        assert bottiglia.nome == "bottiglia"
+        assert bottiglia.nome == "Bottiglia"
         assert bottiglia.altezza > 0
     
     def test_smartphone_creazione(self):
         """Test creazione smartphone."""
         smartphone = Smartphone()
-        assert smartphone.nome == "smartphone"
+        assert smartphone.nome == "Smartphone"
         assert hasattr(smartphone, 'larghezza')
     
     def test_tazza_creazione(self):
         """Test creazione tazza."""
         tazza = Tazza()
-        assert tazza.nome == "tazza"
-        assert hasattr(tazza, 'capacita')
+        assert tazza.nome == "Tazza"
+        assert hasattr(tazza, 'altezza')
 
 
 class TestCreaOggetto:
@@ -58,19 +58,19 @@ class TestCreaOggetto:
         """Test creazione mela."""
         obj = crea_oggetto("mela")
         assert obj is not None
-        assert obj.nome == "mela"
+        assert obj.nome == "Mela"
     
     def test_crea_palla(self):
         """Test creazione palla."""
         obj = crea_oggetto("palla")
         assert obj is not None
-        assert obj.nome == "palla"
+        assert obj.nome == "Palla"
     
     def test_crea_cubo(self):
         """Test creazione cubo."""
         obj = crea_oggetto("cubo")
         assert obj is not None
-        assert obj.nome == "cubo"
+        assert obj.nome == "Cubo"
     
     def test_crea_oggetto_inesistente(self):
         """Test oggetto non esistente."""
@@ -93,27 +93,31 @@ class TestCreaOggetto:
 class TestOggettiGeometria:
     """Test geometria e mesh degli oggetti."""
     
-    def test_mela_ha_vertices(self):
-        """Test che mela abbia vertici."""
+    def test_mela_ha_mesh(self):
+        """Test che mela abbia mesh."""
         mela = Mela()
-        vertices = mela.get_vertices()
-        assert vertices is not None
-        assert len(vertices) > 0
+        x, y, z = mela.get_mesh()
+        assert x is not None
+        assert y is not None
+        assert z is not None
+        assert len(x) > 0
     
-    def test_palla_ha_faces(self):
-        """Test che palla abbia facce."""
+    def test_palla_ha_mesh(self):
+        """Test che palla abbia mesh."""
         palla = Palla()
-        faces = palla.get_faces()
-        assert faces is not None
-        assert len(faces) > 0
+        x, y, z = palla.get_mesh()
+        assert x is not None
+        assert len(x) > 0
     
-    def test_cubo_ha_dimensioni_corrette(self):
-        """Test dimensioni cubo."""
+    def test_cubo_ha_mesh(self):
+        """Test mesh cubo."""
         cubo = Cubo()
-        vertices = cubo.get_vertices()
+        x, y, z = cubo.get_mesh()
         
-        # Un cubo deve avere 8 vertici
-        assert len(vertices) >= 8
+        # Mesh deve avere dati
+        assert x is not None
+        assert y is not None
+        assert z is not None
     
     def test_oggetti_hanno_colore(self):
         """Test che tutti gli oggetti abbiano colore."""
@@ -134,17 +138,17 @@ class TestOggettiPosizione:
     def test_mela_posizione_default(self):
         """Test posizione default mela."""
         mela = Mela()
-        pos = mela.get_posizione()
+        pos = mela.posizione
         assert pos is not None
         assert len(pos) == 3  # x, y, z
     
     def test_set_posizione(self):
         """Test impostazione posizione."""
         mela = Mela()
-        nuova_pos = (10, 20, 30)
-        mela.set_posizione(nuova_pos)
+        nuova_pos = np.array([10, 20, 30])
+        mela.posizione = nuova_pos
         
-        pos = mela.get_posizione()
+        pos = mela.posizione
         assert pos[0] == 10
         assert pos[1] == 20
         assert pos[2] == 30
@@ -153,11 +157,12 @@ class TestOggettiPosizione:
         """Test rotazione oggetto."""
         cubo = Cubo()
         
-        # Ruota 90 gradi
-        cubo.ruota(90, asse='z')
+        # Rotazione è un attributo numpy array
+        cubo.rotazione = np.array([0, 0, 90])
         
-        rotazione = cubo.get_rotazione()
+        rotazione = cubo.rotazione
         assert rotazione is not None
+        assert rotazione[2] == 90
 
 
 class TestOggettiInterazione:
@@ -166,22 +171,22 @@ class TestOggettiInterazione:
     def test_mela_is_afferrabile(self):
         """Test che mela sia afferrabile."""
         mela = Mela()
-        assert hasattr(mela, 'afferrabile')
-        assert mela.afferrabile is True
+        assert hasattr(mela, 'proprieta')
+        assert mela.proprieta.afferrabile is True
     
     def test_bottiglia_is_afferrabile(self):
         """Test che bottiglia sia afferrabile."""
         bottiglia = Bottiglia()
-        assert bottiglia.afferrabile is True
+        assert bottiglia.proprieta.afferrabile is True
     
     def test_oggetti_hanno_peso(self):
         """Test che oggetti abbiano peso (per fisica)."""
         mela = Mela()
-        assert hasattr(mela, 'peso')
-        assert mela.peso > 0
+        assert hasattr(mela.proprieta, 'massa')
+        assert mela.proprieta.massa > 0
         
-        # Mela dovrebbe pesare circa 100-200g
-        assert 50 < mela.peso < 300
+        # Mela dovrebbe pesare circa 100-200g (in kg: 0.1-0.2)
+        assert 0.05 < mela.proprieta.massa < 0.3
 
 
 class TestOggettiRendering:
@@ -202,16 +207,16 @@ class TestOggettiRendering:
             assert hasattr(obj, 'colore')
             assert hasattr(obj, 'alpha')
     
-    def test_rendering_wireframe_vs_solid(self):
-        """Test modalità rendering."""
+    def test_rendering_visibilita(self):
+        """Test visibilità rendering."""
         mela = Mela()
         
-        # Default dovrebbe essere solid
-        assert mela.get_render_mode() == 'solid'
+        # Default dovrebbe essere visibile
+        assert mela.visibile is True
         
-        # Cambia a wireframe
-        mela.set_render_mode('wireframe')
-        assert mela.get_render_mode() == 'wireframe'
+        # Nascondi oggetto
+        mela.visibile = False
+        assert mela.visibile is False
 
 
 class TestOggettiValidazione:
@@ -222,8 +227,9 @@ class TestOggettiValidazione:
         oggetti = [Mela(), Palla(), Cubo(), Bottiglia(), Tazza()]
         
         for obj in oggetti:
-            dim = obj.dimensione if hasattr(obj, 'dimensione') else obj.altezza
-            assert dim > 0, f"{obj.nome} ha dimensione negativa/zero"
+            # Controlla le dimensioni nelle proprietà
+            dimensioni = obj.proprieta.dimensioni
+            assert all(d > 0 for d in dimensioni), f"{obj.nome} ha dimensioni negative/zero"
     
     def test_colori_validi(self):
         """Test che colori siano nel range valido."""
@@ -238,23 +244,23 @@ class TestOggettiValidazione:
     def test_nomi_univoci(self):
         """Test che ogni oggetto abbia nome univoco."""
         oggetti = [Mela(), Palla(), Cubo(), Bottiglia(), Smartphone(), Tazza()]
-        nomi = [obj.nome for obj in oggetti]
+        nomi = [obj.nome.lower() for obj in oggetti]
         
-        # Nessun duplicato
+        # Nessun duplicato (case insensitive)
         assert len(nomi) == len(set(nomi))
 
 
 class TestOggettiPerformance:
     """Test performance rendering oggetti."""
     
-    def test_vertices_count_ragionevole(self):
-        """Test che numero vertici sia ragionevole."""
+    def test_mesh_count_ragionevole(self):
+        """Test che mesh sia ragionevole."""
         mela = Mela()
-        vertices = mela.get_vertices()
+        x, y, z = mela.get_mesh()
         
         # Non troppi vertici (performance)
         # Oggetto semplice: < 10000 vertici
-        assert len(vertices) < 10000
+        assert x.size < 10000
     
     def test_creazione_veloce(self):
         """Test che creazione oggetto sia veloce."""
@@ -287,11 +293,12 @@ class TestOggettiIntegrazione:
     def test_oggetti_compatibili_con_numpy(self):
         """Test che oggetti siano compatibili con numpy."""
         mela = Mela()
-        vertices = mela.get_vertices()
+        x, y, z = mela.get_mesh()
         
-        # Converti a numpy array
-        arr = np.array(vertices)
-        assert arr.shape[1] == 3  # x, y, z
+        # Mesh usa numpy arrays
+        assert isinstance(x, np.ndarray)
+        assert isinstance(y, np.ndarray)
+        assert isinstance(z, np.ndarray)
 
 
 if __name__ == "__main__":

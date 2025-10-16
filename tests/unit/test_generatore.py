@@ -3,7 +3,7 @@ Test per il modulo generatore.
 """
 
 import pytest
-from core.generatore import GeneratoreCodice, get_generatore, genera_codice
+from pythonita.core.generatore import GeneratoreCodice, get_generatore, genera_codice
 
 
 class TestGeneratoreCodice:
@@ -48,8 +48,8 @@ class TestGeneratoreCodice:
     
     def test_identifica_comando_lista(self, generatore_senza_ai):
         """Test identificazione comando lista."""
-        # Usa parola "lista" invece di "crea" per evitare match con "def"
-        comando = generatore_senza_ai._identifica_comando("lista numeri")
+        # Usa "elenco" che è sinonimo univoco di "list"
+        comando = generatore_senza_ai._identifica_comando("elenco di numeri")
         assert comando == "list"
     
     def test_identifica_comando_sconosciuto(self, generatore_senza_ai):

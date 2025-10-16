@@ -3,9 +3,9 @@ Test visualizzatore 3D con mela
 Questo codice mostra la mano che afferra la mela in 3D
 """
 
-from visualizzatore.viewer_3d import VisualizzatoreMano3D
-from visualizzatore.modelli_3d import ManoRobotica
-from visualizzatore.oggetti_3d import crea_oggetto
+from pythonita.visualization.viewer_3d import VisualizzatoreMano3D
+from pythonita.visualization.modelli_3d import ManoRobotica
+from pythonita.visualization.oggetti_3d import crea_oggetto
 
 # Crea visualizzatore
 vis = VisualizzatoreMano3D(titolo="Mano Afferra Mela")

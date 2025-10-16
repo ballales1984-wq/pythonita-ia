@@ -13,8 +13,8 @@ from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 import threading
 
-from core.generatore import GeneratoreCodice
-from visualizzatore.modelli_3d import ManoRobotica, BraccioRobotico
+from pythonita.core.generatore import GeneratoreCodice
+from pythonita.visualization.modelli_3d import ManoRobotica, BraccioRobotico
 
 # UX Improvements
 try:
@@ -53,7 +53,7 @@ except ImportError:
 # Arduino Controller
 try:
     from pythonita.hardware.arduino_controller import get_arduino_controller
-    from core.arduino_commands import get_arduino_template
+    from pythonita.core.arduino_commands import get_arduino_template
     ARDUINO_AVAILABLE = True
 except ImportError:
     ARDUINO_AVAILABLE = False

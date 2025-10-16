@@ -1,31 +1,35 @@
 """
-Sistema di visualizzazione 3D per Pythonita IA.
-Rendering robot, oggetti e animazioni.
+Modulo di visualizzazione 3D per Pythonita IA.
+Include modelli robot, oggetti 3D interattivi e rendering avanzato.
 """
 
-from .renderer import Renderer3D, Scene3D
-from .robot import RoboticHand, RoboticArm
-from .objects import Object3D, Apple, Ball, Cube
-from .animations import Animation, GraspAnimation, OpenHandAnimation
+from .modelli_3d import ManoRobotica, BraccioRobotico, RobotCompleto, DimensioniReali
+from .viewer_3d import VisualizzatoreMano3D, VisualizzatoreBraccio3D
+from .oggetti_3d import (
+    Oggetto3D, Mela, Palla, Cubo, Bottiglia,
+    Smartphone, Tazza, GestoreOggetti, crea_oggetto
+)
 
 __all__ = [
-    # Rendering
-    'Renderer3D',
-    'Scene3D',
+    # Modelli robot
+    'ManoRobotica',
+    'BraccioRobotico',
+    'RobotCompleto',
+    'DimensioniReali',
     
-    # Robot models
-    'RoboticHand',
-    'RoboticArm',
+    # Visualizzatori
+    'VisualizzatoreMano3D',
+    'VisualizzatoreBraccio3D',
     
-    # Objects
-    'Object3D',
-    'Apple',
-    'Ball',
-    'Cube',
-    
-    # Animations
-    'Animation',
-    'GraspAnimation',
-    'OpenHandAnimation',
+    # Oggetti 3D
+    'Oggetto3D',
+    'Mela',
+    'Palla',
+    'Cubo',
+    'Bottiglia',
+    'Smartphone',
+    'Tazza',
+    'GestoreOggetti',
+    'crea_oggetto',
 ]
 
