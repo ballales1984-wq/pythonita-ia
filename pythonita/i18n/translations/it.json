@@ -1,0 +1,108 @@
+{
+  "app.title": "Pythonita IA - Visualizzatore 3D Robot",
+  "app.version": "Versione {version}",
+  
+  "gui.welcome": "Benvenuto in Pythonita IA!",
+  "gui.subtitle": "Traduci italiano in Python con visualizzazione 3D",
+  
+  "gui.input.label": "Inserisci comando in italiano:",
+  "gui.input.placeholder": "es: la mano afferra la mela",
+  
+  "gui.output.label": "Codice Python Generato:",
+  "gui.template.label": "Template:",
+  
+  "gui.theme.label": "Tema:",
+  "gui.theme.light": "☀️ Chiaro",
+  "gui.theme.dark": "🌙 Scuro",
+  "gui.theme.high_contrast": "🔆 Alto Contrasto",
+  
+  "gui.button.generate": "Genera Codice",
+  "gui.button.execute": "Esegui Animazione",
+  "gui.button.stop": "Ferma",
+  "gui.button.reset": "Reset Vista",
+  "gui.button.export_code": "💾 Export Codice",
+  "gui.button.export_screenshot": "📸 Export Screenshot",
+  
+  "status.ready": "Pronto",
+  "status.generating": "Generando codice...",
+  "status.success": "Codice generato! Premi 'Esegui Animazione'",
+  "status.executing": "Esecuzione in corso...",
+  "status.error": "Errore: {error}",
+  "status.stopped": "Esecuzione fermata",
+  
+  "template.robot": "Robot",
+  "template.mano_bionica": "Mano Bionica",
+  "template.generico": "Generico",
+  
+  "error.generation_failed": "Errore durante la generazione del codice",
+  "error.execution_failed": "Errore durante l'esecuzione",
+  "error.export_failed": "Errore durante l'export",
+  "error.invalid_input": "Input non valido",
+  
+  "export.code_saved": "Codice salvato in: {path}",
+  "export.screenshot_saved": "Screenshot salvato in: {path}",
+  "export.folder_opened": "Cartella aperta",
+  "export.not_available": "Export non disponibile",
+  
+  "license.free": "Gratuito",
+  "license.trial": "Prova",
+  "license.personal": "Personale",
+  "license.pro": "Pro",
+  "license.enterprise": "Enterprise",
+  "license.expired": "Licenza scaduta",
+  "license.invalid": "Licenza non valida",
+  
+  "objects.apple": "Mela",
+  "objects.ball": "Palla",
+  "objects.cube": "Cubo",
+  "objects.bottle": "Bottiglia",
+  "objects.smartphone": "Smartphone",
+  "objects.cup": "Tazza",
+  "objects.hammer": "Martello",
+  "objects.screwdriver": "Cacciavite",
+  "objects.wrench": "Chiave inglese",
+  "objects.pliers": "Pinza",
+  "objects.banana": "Banana",
+  "objects.orange": "Arancia",
+  "objects.sandwich": "Panino",
+  "objects.mouse": "Mouse",
+  "objects.keyboard": "Tastiera",
+  "objects.book": "Libro",
+  "objects.pen": "Penna",
+  "objects.watch": "Orologio",
+  
+  "help.commands": "Comandi disponibili",
+  "help.examples": "Esempi",
+  "help.documentation": "Documentazione",
+  "help.about": "Informazioni",
+  
+  "dialog.confirm": "Conferma",
+  "dialog.cancel": "Annulla",
+  "dialog.ok": "OK",
+  "dialog.yes": "Sì",
+  "dialog.no": "No",
+  
+  "notification.theme_changed": "✨ Tema cambiato: {theme}",
+  "notification.language_changed": "🌐 Lingua cambiata: {language}",
+  "notification.plugin_loaded": "🔌 Plugin caricato: {plugin}",
+  
+  "menu.file": "File",
+  "menu.edit": "Modifica",
+  "menu.view": "Visualizza",
+  "menu.tools": "Strumenti",
+  "menu.help": "Aiuto",
+  
+  "tooltip.generate": "Genera codice Python dal comando italiano",
+  "tooltip.execute": "Esegui l'animazione 3D",
+  "tooltip.stop": "Ferma l'animazione in corso",
+  "tooltip.reset": "Resetta la vista 3D alla posizione iniziale",
+  "tooltip.export_code": "Salva il codice generato come file .py",
+  "tooltip.export_screenshot": "Salva uno screenshot della visualizzazione 3D",
+  
+  "performance.fps": "FPS: {fps}",
+  "performance.optimized": "Performance ottimizzate",
+  "performance.quality_high": "Qualità alta",
+  "performance.quality_medium": "Qualità media",
+  "performance.quality_low": "Qualità bassa"
+}
+

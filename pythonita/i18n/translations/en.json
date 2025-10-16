@@ -1,0 +1,108 @@
+{
+  "app.title": "Pythonita AI - 3D Robot Visualizer",
+  "app.version": "Version {version}",
+  
+  "gui.welcome": "Welcome to Pythonita AI!",
+  "gui.subtitle": "Translate Italian to Python with 3D Visualization",
+  
+  "gui.input.label": "Enter command in Italian:",
+  "gui.input.placeholder": "e.g.: la mano afferra la mela",
+  
+  "gui.output.label": "Generated Python Code:",
+  "gui.template.label": "Template:",
+  
+  "gui.theme.label": "Theme:",
+  "gui.theme.light": "☀️ Light",
+  "gui.theme.dark": "🌙 Dark",
+  "gui.theme.high_contrast": "🔆 High Contrast",
+  
+  "gui.button.generate": "Generate Code",
+  "gui.button.execute": "Run Animation",
+  "gui.button.stop": "Stop",
+  "gui.button.reset": "Reset View",
+  "gui.button.export_code": "💾 Export Code",
+  "gui.button.export_screenshot": "📸 Export Screenshot",
+  
+  "status.ready": "Ready",
+  "status.generating": "Generating code...",
+  "status.success": "Code generated! Press 'Run Animation'",
+  "status.executing": "Executing...",
+  "status.error": "Error: {error}",
+  "status.stopped": "Execution stopped",
+  
+  "template.robot": "Robot",
+  "template.mano_bionica": "Bionic Hand",
+  "template.generico": "Generic",
+  
+  "error.generation_failed": "Code generation failed",
+  "error.execution_failed": "Execution failed",
+  "error.export_failed": "Export failed",
+  "error.invalid_input": "Invalid input",
+  
+  "export.code_saved": "Code saved to: {path}",
+  "export.screenshot_saved": "Screenshot saved to: {path}",
+  "export.folder_opened": "Folder opened",
+  "export.not_available": "Export not available",
+  
+  "license.free": "Free",
+  "license.trial": "Trial",
+  "license.personal": "Personal",
+  "license.pro": "Pro",
+  "license.enterprise": "Enterprise",
+  "license.expired": "License expired",
+  "license.invalid": "Invalid license",
+  
+  "objects.apple": "Apple",
+  "objects.ball": "Ball",
+  "objects.cube": "Cube",
+  "objects.bottle": "Bottle",
+  "objects.smartphone": "Smartphone",
+  "objects.cup": "Cup",
+  "objects.hammer": "Hammer",
+  "objects.screwdriver": "Screwdriver",
+  "objects.wrench": "Wrench",
+  "objects.pliers": "Pliers",
+  "objects.banana": "Banana",
+  "objects.orange": "Orange",
+  "objects.sandwich": "Sandwich",
+  "objects.mouse": "Mouse",
+  "objects.keyboard": "Keyboard",
+  "objects.book": "Book",
+  "objects.pen": "Pen",
+  "objects.watch": "Watch",
+  
+  "help.commands": "Available Commands",
+  "help.examples": "Examples",
+  "help.documentation": "Documentation",
+  "help.about": "About",
+  
+  "dialog.confirm": "Confirm",
+  "dialog.cancel": "Cancel",
+  "dialog.ok": "OK",
+  "dialog.yes": "Yes",
+  "dialog.no": "No",
+  
+  "notification.theme_changed": "✨ Theme changed: {theme}",
+  "notification.language_changed": "🌐 Language changed: {language}",
+  "notification.plugin_loaded": "🔌 Plugin loaded: {plugin}",
+  
+  "menu.file": "File",
+  "menu.edit": "Edit",
+  "menu.view": "View",
+  "menu.tools": "Tools",
+  "menu.help": "Help",
+  
+  "tooltip.generate": "Generate Python code from Italian command",
+  "tooltip.execute": "Run the 3D animation",
+  "tooltip.stop": "Stop the current animation",
+  "tooltip.reset": "Reset 3D view to initial position",
+  "tooltip.export_code": "Save generated code as .py file",
+  "tooltip.export_screenshot": "Save a screenshot of the 3D visualization",
+  
+  "performance.fps": "FPS: {fps}",
+  "performance.optimized": "Performance optimized",
+  "performance.quality_high": "High quality",
+  "performance.quality_medium": "Medium quality",
+  "performance.quality_low": "Low quality"
+}
+
