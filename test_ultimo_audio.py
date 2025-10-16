@@ -44,3 +44,4 @@ except sr.UnknownValueError:
 except sr.RequestError as e:
     print(f"\n❌ Errore Google: {e}")
 
+
