@@ -288,7 +288,8 @@ class PythonitaGUI3D:
         self.input_box = scrolledtext.ScrolledText(frame, height=15, width=35,
                                                    font=('Consolas', 10), wrap=tk.WORD)
         self.input_box.pack(fill=tk.BOTH, expand=True, pady=5)
-        # RIMOSSO auto-update per evitare lag: self.input_box.bind('<KeyRelease>', self._on_key_release)
+        # Auto-genera codice mentre scrivi (con debounce 300ms per evitare lag)
+        self.input_box.bind('<KeyRelease>', self._on_key_release)
         
         # Esempi rapidi
         tk.Label(frame, text="Esempi Rapidi:", font=('Arial', 9, 'bold')).pack(anchor='w', pady=(10,5))
@@ -353,13 +354,10 @@ class PythonitaGUI3D:
         frame = tk.Frame(self.root, bg='#ecf0f1', pady=10)
         frame.pack(fill=tk.X)
         
-        btn_genera = tk.Button(frame, text="Genera Codice",
-                              command=self._aggiorna_codice,
-                              font=('Arial', 10, 'bold'), bg='#f39c12', fg='white',
-                              padx=20, pady=8)
-        btn_genera.pack(side=tk.LEFT, padx=10)
+        # Pulsante "Genera Codice" RIMOSSO - ora è automatico!
+        # (si genera mentre scrivi o dopo riconoscimento vocale)
         
-        btn_esegui = tk.Button(frame, text="Esegui Animazione 3D",
+        btn_esegui = tk.Button(frame, text="▶️ Esegui Animazione 3D",
                               command=self._esegui_animazione,
                               font=('Arial', 10, 'bold'), bg='#27ae60', fg='white',
                               padx=20, pady=8)
@@ -412,7 +410,14 @@ class PythonitaGUI3D:
         self.input_box.insert('1.0', comando)
         self._aggiorna_codice()  # Genera subito per gli esempi
     
-    # RIMOSSA funzione _on_key_release - ora si usa il bottone "Genera Codice"
+    def _on_key_release(self, event):
+        """Auto-genera codice dopo una pausa nella scrittura."""
+        # Cancella timer precedente
+        if hasattr(self, '_key_timer'):
+            self.root.after_cancel(self._key_timer)
+        
+        # Avvia nuovo timer (300ms di pausa = auto-genera)
+        self._key_timer = self.root.after(300, self._aggiorna_codice)
     
     def _aggiorna_codice(self):
         """Aggiorna codice generato."""
@@ -1111,10 +1116,10 @@ def main():
 ==================================================================
 
 COME USARE:
-1. Scrivi comando in italiano (es: "apri mano")
-2. Premi "Genera Codice" (bottone arancione)
-3. Premi "Esegui Animazione 3D" (bottone verde)
-4. Guarda la mano 3D animarsi!
+1. 🎤 Premi REC e dì il comando (es: "apri mano") OPPURE scrivilo
+2. ✅ Il codice si genera AUTOMATICAMENTE
+3. ▶️  Premi "Esegui Animazione 3D" (bottone verde)
+4. 🤖 Guarda la mano 3D animarsi!
 
 COMANDI DISPONIBILI:
 - apri mano / chiudi pugno
@@ -1122,8 +1127,8 @@ COMANDI DISPONIBILI:
 - afferra oggetto
 - alza braccio
 
-NOTA: Ora puoi scrivere SENZA LAG!
-Il codice si genera solo quando premi il bottone.
+NOTA: Il codice si genera AUTOMATICAMENTE mentre scrivi o parli!
+Nessun bottone da premere, tutto fluido! 🚀
 
 La GUI e' aperta!
 ==================================================================
