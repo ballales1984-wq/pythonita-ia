@@ -807,17 +807,17 @@ class PythonitaGUI3D:
                         self.speech_recognizer.recognizer.adjust_for_ambient_noise(source, duration=0.7)
                         
                         # Fase 2: PRONTO - ora puoi parlare!
-                        self.root.after(0, lambda: self.status_var.set("🔴 PARLA ORA! (dì il comando)"))
+                        self.root.after(0, lambda: self.status_var.set("🔴 PARLA ORA! (hai 20 secondi)"))
                         self.root.after(0, lambda: self.btn_stop.config(bg='#e74c3c'))
                         
-                        # Fase 3: Ascolto (max 10 secondi)
+                        # Fase 3: Ascolto (max 20 secondi)
                         if not self.recording:  # Check se stop premuto durante calibrazione
                             return
                         
                         audio = self.speech_recognizer.recognizer.listen(
                             source, 
-                            timeout=15,  # Aspetta fino a 15s prima che inizi a parlare
-                            phrase_time_limit=10  # Max 10s di parlato
+                            timeout=20,  # Aspetta fino a 20s prima che inizi a parlare
+                            phrase_time_limit=20  # Max 20s di parlato (frasi lunghe)
                         )
                         
                         if not self.recording:  # Check se stop premuto durante ascolto
