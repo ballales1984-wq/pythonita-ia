@@ -48,7 +48,7 @@ class VisualizzatoreMano3D:
             self.mesh_cache = MeshCache(max_size=50)
             self.perf_monitor = PerformanceMonitor()
             self.render_optimizer = RenderingOptimizer()
-            print("[OPTIMIZER] Performance optimization ENABLED ✅")
+            print("[OPTIMIZER] Performance optimization ENABLED")
         else:
             self.mesh_cache = None
             self.perf_monitor = None

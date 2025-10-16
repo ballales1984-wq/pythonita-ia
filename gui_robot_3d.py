@@ -65,14 +65,14 @@ class PythonitaGUI3D:
         if UX_IMPROVEMENTS_AVAILABLE:
             self.status_bar = StatusBar(self.root)
             self.status_bar.set_ready()
-            print("[GUI] UX improvements enabled ✅")
+            print("[GUI] UX improvements enabled")
         else:
             self.status_bar = None
         
         # Theme System
         if THEMES_AVAILABLE:
             self.theme_manager = get_theme_manager()
-            print(f"[GUI] Theme system enabled: {self.theme_manager.current_theme_name} ✅")
+            print(f"[GUI] Theme system enabled: {self.theme_manager.current_theme_name}")
         else:
             self.theme_manager = None
         
