@@ -220,48 +220,9 @@ class TemplateGenerationStrategy(GenerationStrategy):
     
     def generate(self, command: ParsedCommand) -> Optional[str]:
         """Genera da template."""
+        # Template-based generation
         template = self.templates.get(self.template_name, {})
-        
-        if not template:
-            return None
-        
-        # Match intent con template disponibili
-        intent = command.intent
-        entities = command.entities
-        
-        # Rimuovi prefisso robot_ per matching
-        clean_intent = intent.replace("robot_", "").replace("mano_", "")
-        
-        # Cerca template corrispondente
-        if clean_intent in template:
-            template_str = template[clean_intent]
-            
-            # Sostituisci placeholder con entities
-            try:
-                code = template_str.format(**entities)
-                
-                # Wrappa in codice completo
-                full_code = f"""# Template: {self.template_name}
-# Intent: {intent}
-
-{code}
-"""
-                logger.info(f"Generato da template {self.template_name}")
-                return full_code
-                
-            except KeyError as e:
-                logger.warning(f"Entity mancante per template: {e}")
-                return None
-        
-        # Cerca match parziale (es: "afferra" match "afferra_*")
-        for template_key, template_str in template.items():
-            if clean_intent.startswith(template_key) or template_key in clean_intent:
-                try:
-                    code = template_str.format(**entities)
-                    return f"# Template: {self.template_name}\n{code}"
-                except:
-                    pass
-        
+        # TODO: Implementa template matching
         return None
     
     @property

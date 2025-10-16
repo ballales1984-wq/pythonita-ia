@@ -223,16 +223,10 @@ class PythonitaGUI3D:
         
         if not frase:
             self.output_box.delete('1.0', tk.END)
-            if self.status_bar:
-                self.status_bar.set_ready()
             return
         
         try:
-            # Status bar update
-            if self.status_bar:
-                self.status_bar.set_busy("Generando codice...")
             self.status_var.set("Generando...")
-            self.root.update()
             
             # Genera codice
             codice = self.generatore.genera(frase)
@@ -241,24 +235,12 @@ class PythonitaGUI3D:
             self.output_box.delete('1.0', tk.END)
             self.output_box.insert('1.0', codice)
             
-            # Success feedback
-            if self.status_bar:
-                self.status_bar.set_success("Codice generato! Premi 'Esegui Animazione'")
             self.status_var.set("Codice generato! Premi 'Esegui Animazione'")
             
         except Exception as e:
-            # User-friendly error handling
-            if UX_IMPROVEMENTS_AVAILABLE:
-                UserFriendlyError.show_error(
-                    self.root, e, 
-                    "Errore durante la generazione del codice"
-                )
-                if self.status_bar:
-                    self.status_bar.set_error(str(e)[:50])
-            else:
-                messagebox.showerror("Errore", f"Errore generazione: {e}")
-            
-            self.status_var.set("Errore! Riprova")
+            self.output_box.delete('1.0', tk.END)
+            self.output_box.insert('1.0', f"# Errore: {e}")
+            self.status_var.set(f"Errore: {e}")
     
     def _esegui_animazione(self):
         """Esegue animazione 3D basata sul comando."""

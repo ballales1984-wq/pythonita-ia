@@ -259,6 +259,11 @@ class PythonitaGUI3D:
                 messagebox.showerror("Errore", f"Errore generazione: {e}")
             
             self.status_var.set("Errore! Riprova")
+            
+        except Exception as e:
+            self.output_box.delete('1.0', tk.END)
+            self.output_box.insert('1.0', f"# Errore: {e}")
+            self.status_var.set(f"Errore: {e}")
     
     def _esegui_animazione(self):
         """Esegue animazione 3D basata sul comando."""

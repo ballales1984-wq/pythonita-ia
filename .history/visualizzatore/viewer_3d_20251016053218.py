@@ -178,10 +178,6 @@ class VisualizzatoreMano3D:
     
     def disegna_mano(self):
         """Disegna la mano nello stato corrente."""
-        # Performance monitoring
-        if self.optimization_enabled:
-            self.perf_monitor.start_frame()
-        
         self.ax.clear()
         self._setup_grafico()
         
@@ -223,19 +219,6 @@ class VisualizzatoreMano3D:
         self._aggiungi_info_stato()
         
         plt.draw()
-        
-        # Performance monitoring
-        if self.optimization_enabled:
-            self.perf_monitor.end_frame()
-            
-            # Ogni 30 frame, stampa statistiche FPS
-            if self.perf_monitor.total_frames % 30 == 0:
-                fps = self.perf_monitor.get_fps()
-                print(f"[PERF] FPS: {fps:.1f}")
-                
-                # Adaptive quality adjustment
-                self.render_optimizer.adjust_quality(fps)
-        
         plt.pause(0.01)
     
     def _disegna_palmo(self):
@@ -396,61 +379,6 @@ class VisualizzatoreMano3D:
         """Mostra la finestra."""
         plt.legend(loc='upper right')
         plt.show()
-    
-    def print_performance_stats(self):
-        """Stampa statistiche performance complete."""
-        if not self.optimization_enabled:
-            print("[INFO] Performance optimization non abilitata")
-            return
-        
-        print("\n" + "="*70)
-        print("STATISTICHE PERFORMANCE - Visualizzatore 3D")
-        print("="*70)
-        
-        # Performance stats
-        perf_stats = self.perf_monitor.get_stats()
-        print(f"\nRendering:")
-        print(f"  FPS Corrente:     {perf_stats['fps_current']:.1f}")
-        print(f"  FPS Medio:        {perf_stats['fps_average']:.1f}")
-        print(f"  Frame Totali:     {perf_stats['total_frames']}")
-        print(f"  Frame Time (avg): {perf_stats['frame_time_avg']*1000:.2f}ms")
-        print(f"  Frame Time (min): {perf_stats['frame_time_min']*1000:.2f}ms")
-        print(f"  Frame Time (max): {perf_stats['frame_time_max']*1000:.2f}ms")
-        
-        # Cache stats
-        if self.mesh_cache:
-            cache_stats = self.mesh_cache.get_stats()
-            print(f"\nMesh Cache:")
-            print(f"  Dimensione:       {cache_stats['size']} oggetti")
-            print(f"  Hit Rate:         {cache_stats['hit_rate']:.1f}%")
-            print(f"  Cache Hits:       {cache_stats['hits']}")
-            print(f"  Cache Misses:     {cache_stats['misses']}")
-        
-        # Rendering quality
-        if self.render_optimizer:
-            settings = self.render_optimizer.get_settings()
-            print(f"\nQualità Rendering:")
-            print(f"  Livello:          {self.render_optimizer.quality_level.upper()}")
-            print(f"  Sfera Risoluzione:{settings['sphere_resolution']}")
-            print(f"  Antialiasing:     {'✅' if settings['antialiasing'] else '❌'}")
-            print(f"  Ombre:            {'✅' if settings['shadows'] else '❌'}")
-            print(f"  Max Vertici:      {settings['max_vertices']}")
-        
-        print("\n" + "="*70)
-        
-        # Raccomandazioni
-        fps_current = perf_stats['fps_current']
-        if fps_current < 20:
-            print("⚠️  ATTENZIONE: FPS molto bassi! Suggerimenti:")
-            print("   - Chiudi altri programmi")
-            print("   - Riduci numero oggetti 3D nella scena")
-            print("   - Disabilita rendering avanzato")
-        elif fps_current < 30:
-            print("ℹ️  FPS accettabili ma potrebbero migliorare")
-        else:
-            print("✅ Performance ottime!")
-        
-        print("="*70 + "\n")
 
 
 class VisualizzatoreBraccio3D:
