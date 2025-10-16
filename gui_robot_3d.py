@@ -431,15 +431,26 @@ class PythonitaGUI3D:
         
         # Feedback visivo IMMEDIATO
         print("[DEBUG] Inizio generazione...")  # DEBUG
-        self.status_var.set("🤖 AI sta generando codice...")
+        self.status_var.set("🤖 AI sta generando codice... (2-3 secondi)")
         self.root.update()  # Forza update immediato
         
-        # Genera con AI
-        self._aggiorna_codice()
-        print("[DEBUG] Codice generato!")  # DEBUG
+        # Genera con AI in thread separato per non bloccare GUI
+        import threading
+        def genera_async():
+            try:
+                print("[DEBUG] Thread AI avviato")  # DEBUG
+                self._aggiorna_codice()
+                print("[DEBUG] Codice generato!")  # DEBUG
+                
+                # Feedback successo (deve essere nel main thread)
+                self.root.after(0, lambda: self.status_var.set(f"✅ Codice generato per: '{frase}'"))
+            except Exception as e:
+                print(f"[DEBUG] ERRORE: {e}")  # DEBUG
+                self.root.after(0, lambda: messagebox.showerror("Errore", f"Errore generazione: {e}"))
         
-        # Feedback successo
-        self.status_var.set(f"✅ Codice generato per: '{frase}'")
+        thread = threading.Thread(target=genera_async, daemon=True)
+        thread.start()
+        print("[DEBUG] Thread avviato, GUI rimane reattiva")  # DEBUG
     
     def _on_key_release(self, event):
         """[RIMOSSO] Non auto-genera più."""
