@@ -261,29 +261,28 @@ class PythonitaGUI3D:
                 self.microfoni_disponibili = []
                 self.selected_mic_index = None
             
-            # Riga 2: Pulsanti REC e STOP
+            # Riga 2: Pulsante PUSH-TO-TALK (stile walkie-talkie)
             buttons_frame = tk.Frame(voice_frame, bg='#2c3e50')
             buttons_frame.pack(side=tk.TOP, pady=2)
             
-            self.btn_record = tk.Button(buttons_frame, text="🔴 REC",
-                                       command=self._avvia_registrazione,
-                                       font=('Arial', 9, 'bold'), bg='#e74c3c', fg='white',
-                                       relief=tk.RAISED, bd=2, width=6)
-            self.btn_record.pack(side=tk.LEFT, padx=2)
+            self.btn_ptt = tk.Button(buttons_frame, text="🎤 TIENI PREMUTO PER PARLARE",
+                                    font=('Arial', 10, 'bold'), bg='#e74c3c', fg='white',
+                                    relief=tk.RAISED, bd=3, width=30, height=2)
+            self.btn_ptt.pack(side=tk.LEFT, padx=2)
             
-            self.btn_stop = tk.Button(buttons_frame, text="⬛ STOP",
-                                     command=self._ferma_registrazione,
-                                     font=('Arial', 9, 'bold'), bg='#95a5a6', fg='white',
-                                     relief=tk.RAISED, bd=2, width=6, state='disabled')
-            self.btn_stop.pack(side=tk.LEFT, padx=2)
+            # Eventi push-to-talk
+            self.btn_ptt.bind('<ButtonPress-1>', self._on_ptt_press)
+            self.btn_ptt.bind('<ButtonRelease-1>', self._on_ptt_release)
             
             # Stato registrazione
             self.recording = False
             self.recording_thread = None
             if UX_IMPROVEMENTS_AVAILABLE:
-                add_tooltip(self.btn_record, "Avvia registrazione vocale")
-                add_tooltip(self.btn_stop, "Ferma registrazione")
-                add_tooltip(self.mic_dropdown, "Seleziona microfono da usare")
+                add_tooltip(self.btn_ptt, "Tieni premuto per parlare, rilascia per fermare (come walkie-talkie)")
+            
+            # Riferimenti vecchi per compatibilità
+            self.btn_record = self.btn_ptt
+            self.btn_stop = None
         
         self.input_box = scrolledtext.ScrolledText(frame, height=15, width=35,
                                                    font=('Consolas', 10), wrap=tk.WORD)
@@ -774,6 +773,18 @@ class PythonitaGUI3D:
         except Exception as e:
             print(f"[THEME] Errore applicazione tema: {e}")
     
+    def _on_ptt_press(self, event):
+        """Evento: pulsante push-to-talk PREMUTO - inizia registrazione."""
+        self._avvia_registrazione()
+        # Feedback visivo
+        self.btn_ptt.config(relief=tk.SUNKEN, bg='#c0392b', text="🔴 STO REGISTRANDO...")
+    
+    def _on_ptt_release(self, event):
+        """Evento: pulsante push-to-talk RILASCIATO - ferma registrazione."""
+        self._ferma_registrazione()
+        # Ripristina pulsante
+        self.btn_ptt.config(relief=tk.RAISED, bg='#e74c3c', text="🎤 TIENI PREMUTO PER PARLARE")
+    
     def _avvia_registrazione(self):
         """Avvia registrazione vocale con feedback immediato."""
         if not SPEECH_RECOGNITION_AVAILABLE or not self.speech_recognizer:
@@ -788,8 +799,6 @@ class PythonitaGUI3D:
             self.recording = True
             
             # Aggiorna UI immediatamente
-            self.btn_record.config(state='disabled', bg='#7f8c8d')
-            self.btn_stop.config(state='normal', bg='#c0392b')
             self.status_var.set("⏳ Calibrando microfono...")
             self.root.update()
             
@@ -807,8 +816,7 @@ class PythonitaGUI3D:
                         self.speech_recognizer.recognizer.adjust_for_ambient_noise(source, duration=0.7)
                         
                         # Fase 2: PRONTO - ora puoi parlare!
-                        self.root.after(0, lambda: self.status_var.set("🔴 PARLA ORA! (hai 20 secondi)"))
-                        self.root.after(0, lambda: self.btn_stop.config(bg='#e74c3c'))
+                        self.root.after(0, lambda: self.status_var.set("🔴 STO ASCOLTANDO... (rilascia quando finisci)"))
                         
                         # Fase 3: Ascolto (max 20 secondi)
                         if not self.recording:  # Check se stop premuto durante calibrazione
@@ -887,10 +895,8 @@ class PythonitaGUI3D:
     
     def _reset_recording_buttons(self):
         """Ripristina stato pulsanti registrazione."""
-        if hasattr(self, 'btn_record'):
-            self.btn_record.config(state='normal', bg='#e74c3c')
-        if hasattr(self, 'btn_stop'):
-            self.btn_stop.config(state='disabled', bg='#95a5a6')
+        if hasattr(self, 'btn_ptt'):
+            self.btn_ptt.config(relief=tk.RAISED, bg='#e74c3c', text="🎤 TIENI PREMUTO PER PARLARE")
     
     def _on_voice_result(self, success, text):
         """Callback con risultato riconoscimento vocale."""
@@ -1146,7 +1152,7 @@ def main():
 ==================================================================
 
 COME USARE:
-1. 🎤 Premi REC e dì il comando (es: "apri mano") OPPURE scrivilo
+1. 🎤 TIENI PREMUTO il pulsante e parla (stile walkie-talkie) OPPURE scrivi
 2. ✅ Il codice si genera AUTOMATICAMENTE
 3. ▶️  Premi "Esegui Animazione 3D" (bottone verde)
 4. 🤖 Guarda la mano 3D animarsi!
@@ -1157,8 +1163,8 @@ COMANDI DISPONIBILI:
 - afferra oggetto
 - alza braccio
 
-NOTA: Il codice si genera AUTOMATICAMENTE mentre scrivi o parli!
-Nessun bottone da premere, tutto fluido! 🚀
+NOTA: Sistema PUSH-TO-TALK (walkie-talkie) 📻
+Tieni premuto → Parla → Rilascia → Codice generato automaticamente! 🚀
 
 La GUI e' aperta!
 ==================================================================
