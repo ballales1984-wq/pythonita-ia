@@ -66,8 +66,25 @@ class PythonitaGUI3D:
     
     def __init__(self, root):
         self.root = root
-        self.root.title("Pythonita IA v3.1 - Visualizzatore 3D Robot")
-        self.root.geometry("1400x800")
+        self.root.title("🤖 Pythonita IA v3.4 Pro - AI Code Generator")
+        self.root.geometry("1600x900")  # Più grande e proporzionata
+        self.root.minsize(1200, 700)  # Dimensione minima
+        
+        # Tema colori moderni
+        self.colors = {
+            'bg_dark': '#1e1e2e',      # Sfondo scuro elegante
+            'bg_medium': '#2d2d44',    # Medio
+            'bg_light': '#3d3d5c',     # Chiaro
+            'accent': '#00d4ff',       # Cyan brillante
+            'success': '#00ff88',      # Verde acceso
+            'warning': '#ffaa00',      # Arancione
+            'error': '#ff4466',        # Rosso
+            'text': '#e0e0e0',         # Testo chiaro
+            'text_dim': '#888888',     # Testo secondario
+        }
+        
+        # Configura tema root
+        self.root.configure(bg=self.colors['bg_dark'])
         
         # Generatore con template generico e AI attiva (auto-riconosce tipo comando)
         self.generatore = GeneratoreCodice(template='generico', use_ai=True, use_cache=True)
