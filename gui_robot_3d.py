@@ -485,12 +485,31 @@ class PythonitaGUI3D:
         self.canvas_3d.draw()
         self.canvas_3d.get_tk_widget().pack(fill=tk.BOTH, expand=True, pady=5)
         
-        # Messaggio iniziale (senza disegnare mano che richiede 3D)
-        self.ax_3d.text(0.5, 0.5, "⏳ In attesa...\n\nVisualizzazione AI\napparirà qui",
+        # Messaggio iniziale + TEST VISIBILITÀ
+        self.ax_3d.text(0.5, 0.5, "In attesa...\n\nVisualizzazione AI\napparirà qui",
                        ha='center', va='center',
-                       fontsize=14, color='#888888', transform=self.ax_3d.transAxes)
+                       fontsize=14, color='#ff0000', fontweight='bold',
+                       transform=self.ax_3d.transAxes)
+        
+        # RETTANGOLO DI TEST per verificare visibilità
+        import matplotlib.patches as patches
+        rect = patches.Rectangle((0.1, 0.1), 0.8, 0.8,
+                                linewidth=3, edgecolor='#00ff00',
+                                facecolor='none',
+                                transform=self.ax_3d.transAxes)
+        self.ax_3d.add_patch(rect)
+        
         self.ax_3d.axis('off')
+        self.ax_3d.set_xlim(0, 1)
+        self.ax_3d.set_ylim(0, 1)
+        
+        # FORZA aggiornamento
         self.canvas_3d.draw()
+        self.canvas_3d.flush_events()
+        self.canvas_3d.get_tk_widget().update_idletasks()
+        self.canvas_3d.get_tk_widget().update()
+        
+        print(f"[DEBUG] Canvas iniziale: size={self.canvas_3d.get_tk_widget().winfo_width()}x{self.canvas_3d.get_tk_widget().winfo_height()}")
     
     def _setup_bottoni_azione(self):
         """Setup bottoni azione."""
