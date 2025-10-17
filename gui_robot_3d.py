@@ -333,14 +333,28 @@ class PythonitaGUI3D:
                           font=('Arial', 8), bg='#3498db', fg='white')
             btn.pack(fill=tk.X, pady=2)
         
-        # PULSANTE GENERA CODICE CON AI
-        tk.Label(frame, text="", font=('Arial', 1)).pack(pady=2)  # Spazio
-        btn_genera = tk.Button(frame, text="🤖 GENERA CODICE CON AI", 
+        # PULSANTE GENERA CODICE CON AI - Stile moderno
+        tk.Label(frame, text="", font=('Arial', 1)).pack(pady=5)  # Spazio
+        btn_genera = tk.Button(frame, text="⚡ GENERA CODICE CON AI", 
                               command=self._genera_codice_con_ai,
-                              font=('Arial', 10, 'bold'), 
-                              bg='#2ecc71', fg='white',
-                              relief=tk.RAISED, bd=3)
-        btn_genera.pack(fill=tk.X, pady=5, ipady=8)
+                              font=('Segoe UI', 11, 'bold'), 
+                              bg='#00ff88', fg='#1e1e2e',
+                              activebackground='#00d4ff',
+                              activeforeground='white',
+                              relief=tk.FLAT, 
+                              cursor='hand2',
+                              bd=0)
+        btn_genera.pack(fill=tk.X, pady=8, ipady=12)
+        
+        # Hover effect simulato con binding
+        def on_enter(e):
+            btn_genera['bg'] = '#00d4ff'
+            btn_genera['fg'] = 'white'
+        def on_leave(e):
+            btn_genera['bg'] = '#00ff88'
+            btn_genera['fg'] = '#1e1e2e'
+        btn_genera.bind('<Enter>', on_enter)
+        btn_genera.bind('<Leave>', on_leave)
     
     def _setup_colonna_codice(self, parent):
         """Setup colonna codice."""
@@ -446,28 +460,21 @@ class PythonitaGUI3D:
             messagebox.showwarning("Input vuoto", "Scrivi prima un comando in italiano!")
             return
         
-        # Feedback visivo IMMEDIATO
-        print("[DEBUG] Inizio generazione...")  # DEBUG
-        self.status_var.set("🤖 AI sta generando codice... (2-3 secondi)")
-        self.root.update()  # Forza update immediato
+        # SEMPLIFICATO: Genera DIRETTAMENTE senza threading
+        # (Il threading causava problemi con Tkinter)
+        print("[DEBUG] Inizio generazione DIRETTA...")  # DEBUG
+        self.status_var.set("🤖 AI sta generando codice...")
+        self.root.update()  # Forza update
         
-        # Genera con AI in thread separato per non bloccare GUI
-        import threading
-        def genera_async():
-            try:
-                print("[DEBUG] Thread AI avviato")  # DEBUG
-                self._aggiorna_codice()
-                print("[DEBUG] Codice generato!")  # DEBUG
-                
-                # Feedback successo (deve essere nel main thread)
-                self.root.after(0, lambda: self.status_var.set(f"✅ Codice generato per: '{frase}'"))
-            except Exception as e:
-                print(f"[DEBUG] ERRORE: {e}")  # DEBUG
-                self.root.after(0, lambda: messagebox.showerror("Errore", f"Errore generazione: {e}"))
-        
-        thread = threading.Thread(target=genera_async, daemon=True)
-        thread.start()
-        print("[DEBUG] Thread avviato, GUI rimane reattiva")  # DEBUG
+        try:
+            # Genera codice (può bloccare 2-3s ma almeno funziona)
+            self._aggiorna_codice()
+            print("[DEBUG] Codice generato!")  # DEBUG
+            self.status_var.set(f"✅ Codice generato per: '{frase}'")
+        except Exception as e:
+            print(f"[DEBUG] ERRORE: {e}")  # DEBUG
+            messagebox.showerror("Errore", f"Errore generazione: {e}")
+            self.status_var.set("❌ Errore generazione")
     
     def _on_key_release(self, event):
         """[RIMOSSO] Non auto-genera più."""
