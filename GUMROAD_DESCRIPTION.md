@@ -1,4 +1,4 @@
-# 🤖 Pythonita IA v3.4.0 - Descrizione Gumroad
+# 🤖 Pythonita IA v3.5 PRO - Descrizione Gumroad
 
 ---
 
@@ -19,7 +19,7 @@ Trasforma comandi in italiano in codice Python professionale con intelligenza ar
 ```markdown
 # 🚀 Genera Codice Python Parlando Italiano!
 
-**Pythonita IA v3.4.0** è l'assistente Python definitivo per chi parla italiano. 
+**Pythonita IA v3.5 PRO** è l'assistente Python definitivo per chi parla italiano. 
 Scrivi comandi in linguaggio naturale e ottieni codice Python professionale in 2-3 secondi!
 
 ---
@@ -37,11 +37,12 @@ Scrivi comandi in linguaggio naturale e ottieni codice Python professionale in 2
 
 ## 🎁 COSA OTTIENI
 
-### 💻 Software Standalone (156 MB)
+### 💻 Software Standalone (512 MB)
 - ✅ Windows 10/11 (64-bit)
 - ✅ Doppio click e funziona
 - ✅ ZERO installazione Python
 - ✅ ZERO dipendenze da configurare
+- ✅ Visualizzazione AI automatica 2D/3D
 
 ### 🤖 AI Locale Super Veloce
 - ✅ Genera codice in 2-3 secondi
@@ -369,7 +370,7 @@ _"Genera codice velocissimo, mi fa risparmiare ore!"_ - Andrea S., Developer
 
 ---
 
-**Pythonita IA v3.4.0** © 2025
+**Pythonita IA v3.5 PRO** © 2025
 Made with ❤️ in Italy 🇮🇹
 
 ---
