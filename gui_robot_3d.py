@@ -196,9 +196,10 @@ class PythonitaGUI3D:
         frame_main = tk.Frame(self.root)
         frame_main.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
         
-        frame_main.columnconfigure(0, weight=2)  # Input
-        frame_main.columnconfigure(1, weight=2)  # Codice
-        frame_main.columnconfigure(2, weight=3)  # 3D
+        frame_main.columnconfigure(0, weight=1)  # Input
+        frame_main.columnconfigure(1, weight=1)  # Codice
+        frame_main.columnconfigure(2, weight=1)  # Risultati
+        frame_main.columnconfigure(3, weight=2)  # 3D (più largo)
         
         # COLONNA 1: Input
         self._setup_colonna_input(frame_main)
