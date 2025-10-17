@@ -473,18 +473,24 @@ class PythonitaGUI3D:
                 bg=self.colors['bg_dark'],
                 fg=self.colors['text_dim']).pack(anchor='w')
         
-        # Canvas matplotlib per 3D (rinominato per consistenza)
+        # Canvas matplotlib dinamico (2D/3D)
         self.figure_3d = Figure(figsize=(6, 6), dpi=100)
         self.figure_3d.patch.set_facecolor('#1e1e2e')
-        self.ax_3d = self.figure_3d.add_subplot(111, projection='3d')
+        # Inizia con 2D (più versatile)
+        self.ax_3d = self.figure_3d.add_subplot(111)
         self.ax_3d.set_facecolor('#0d1117')
+        self.is_3d_mode = False  # Flag per sapere se è 3D
         
         self.canvas_3d = FigureCanvasTkAgg(self.figure_3d, master=frame)
         self.canvas_3d.draw()
         self.canvas_3d.get_tk_widget().pack(fill=tk.BOTH, expand=True, pady=5)
         
-        # Disegna mano iniziale
-        self._disegna_mano_3d()
+        # Messaggio iniziale (senza disegnare mano che richiede 3D)
+        self.ax_3d.text(0.5, 0.5, "⏳ In attesa...\n\nVisualizzazione AI\napparirà qui",
+                       ha='center', va='center',
+                       fontsize=14, color='#888888', transform=self.ax_3d.transAxes)
+        self.ax_3d.axis('off')
+        self.canvas_3d.draw()
     
     def _setup_bottoni_azione(self):
         """Setup bottoni azione."""
@@ -645,6 +651,14 @@ class PythonitaGUI3D:
     
     def _plot_geometria_in_canvas(self, comando: str, risultato: str) -> bool:
         """Plotta geometria 2D nella canvas colonna 4."""
+        # Converti a 2D se necessario
+        if self.is_3d_mode:
+            self.ax_3d.clear()
+            self.ax_3d.remove()
+            self.ax_3d = self.figure_3d.add_subplot(111)
+            self.ax_3d.set_facecolor('#0d1117')
+            self.is_3d_mode = False
+        
         # Usa auto_visualizer ma integrato nella canvas
         raggio = self._estrai_numero_da_comando(comando)
         if not raggio:
