@@ -369,7 +369,7 @@ class PythonitaGUI3D:
         btn_reset.pack(fill=tk.X, pady=3, ipady=6)
     
     def _setup_colonna_codice(self, parent):
-        """Setup colonna codice."""
+        """Setup colonna codice e risultati."""
         frame = tk.Frame(parent)
         frame.grid(row=0, column=1, sticky='nsew', padx=5)
         
@@ -483,10 +483,72 @@ class PythonitaGUI3D:
             self._aggiorna_codice()
             print("[DEBUG] Codice generato!")  # DEBUG
             self.status_var.set(f"✅ Codice generato per: '{frase}'")
+            
+            # ESEGUI AUTOMATICAMENTE il codice generato
+            print("[DEBUG] Auto-esecuzione codice...")
+            self._esegui_codice_automatico()
         except Exception as e:
             print(f"[DEBUG] ERRORE: {e}")  # DEBUG
             messagebox.showerror("Errore", f"Errore generazione: {e}")
             self.status_var.set("❌ Errore generazione")
+    
+    def _esegui_codice_automatico(self):
+        """Esegue automaticamente il codice generato e mostra risultati."""
+        codice = self.output_box.get('1.0', tk.END).strip()
+        
+        if not codice or codice.startswith("#"):
+            return
+        
+        try:
+            print("[EXEC] Esecuzione codice...")
+            
+            # Crea namespace sicuro per esecuzione
+            import io
+            import sys
+            from contextlib import redirect_stdout, redirect_stderr
+            
+            # Cattura output
+            output_buffer = io.StringIO()
+            error_buffer = io.StringIO()
+            
+            # Namespace con librerie comuni
+            namespace = {
+                '__builtins__': __builtins__,
+                'math': __import__('math'),
+                'numpy': __import__('numpy'),
+                'matplotlib': __import__('matplotlib'),
+                'plt': __import__('matplotlib.pyplot'),
+            }
+            
+            # Esegui codice
+            with redirect_stdout(output_buffer), redirect_stderr(error_buffer):
+                exec(codice, namespace)
+            
+            # Mostra risultati
+            output = output_buffer.getvalue()
+            errors = error_buffer.getvalue()
+            
+            if output:
+                print(f"[EXEC] Output: {output}")
+                messagebox.showinfo("✅ Risultato", f"Output:\n{output}")
+            
+            if errors:
+                print(f"[EXEC] Errors: {errors}")
+                messagebox.showwarning("⚠️ Warning", f"Errori/Warning:\n{errors}")
+                
+            # Se ha generato grafico matplotlib, mostra
+            if 'plt.show()' in codice or 'matplotlib' in codice:
+                print("[EXEC] Grafico matplotlib rilevato")
+                import matplotlib.pyplot as plt
+                plt.show()
+            
+            self.status_var.set("✅ Codice eseguito!")
+            
+        except Exception as e:
+            print(f"[EXEC] ERRORE esecuzione: {e}")
+            messagebox.showerror("❌ Errore Esecuzione", 
+                               f"Errore durante l'esecuzione:\n{str(e)[:200]}")
+            self.status_var.set("❌ Errore esecuzione")
     
     def _reset_tutto(self):
         """Pulisce input e output per nuova domanda."""
@@ -495,9 +557,11 @@ class PythonitaGUI3D:
         self.output_box.delete('1.0', tk.END)
         self.status_var.set("✅ Pronto per nuova domanda")
         
-        # Pulisce anche cache se necessario
-        if self.generatore.cache:
-            # Non pulire cache, solo reset UI
+        # Chiudi eventuali grafici aperti
+        try:
+            import matplotlib.pyplot as plt
+            plt.close('all')
+        except:
             pass
         
         print("[DEBUG] Sistema resettato, pronto!")
