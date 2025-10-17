@@ -206,7 +206,10 @@ class PythonitaGUI3D:
         # COLONNA 2: Codice
         self._setup_colonna_codice(frame_main)
         
-        # COLONNA 3: Visualizzatore 3D
+        # COLONNA 3: Risultati ← AGGIUNTO!
+        self._setup_colonna_risultati(frame_main)
+        
+        # COLONNA 4: Visualizzatore 3D
         self._setup_colonna_3d(frame_main)
         
         # Frame inferiore: bottoni azione
