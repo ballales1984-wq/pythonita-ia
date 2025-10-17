@@ -737,6 +737,78 @@ class PythonitaGUI3D:
         print(f"[VIZ-DEBUG] Canvas aggiornato e visibile!")
         return True
     
+    def _plot_triangolo_in_canvas(self, comando: str, output: str) -> bool:
+        """Disegna triangolo nella canvas."""
+        print("[VIZ-DEBUG] Disegno triangolo...")
+        
+        # Estrai numero dal comando (ipotenusa, lato, ecc)
+        lato = self._estrai_numero_da_comando(comando)
+        if not lato:
+            lato = 5  # Default
+        
+        # FORZA modalità 2D
+        self.figure_3d.clear()
+        self.ax_3d = self.figure_3d.add_subplot(111)
+        self.ax_3d.set_facecolor('#0d1117')
+        self.is_3d_mode = False
+        
+        # Disegna triangolo rettangolo
+        # Base e altezza uguali per semplicità
+        base = lato
+        altezza = lato
+        
+        # Coordinate vertici
+        x_tri = [0, base, 0, 0]
+        y_tri = [0, 0, altezza, 0]
+        
+        # Triangolo riempito
+        self.ax_3d.fill(x_tri, y_tri, color='#ff6b6b', alpha=0.6, label='Area')
+        
+        # Bordo triangolo
+        self.ax_3d.plot(x_tri, y_tri, color='#00ff88', linewidth=3, label='Perimetro')
+        
+        # Calcola area
+        area = (base * altezza) / 2
+        
+        # Testo area al centro
+        self.ax_3d.text(base/3, altezza/3, f'Area = {area:.2f}',
+                       ha='center', va='center',
+                       fontsize=16, fontweight='bold',
+                       color='#ffffff',
+                       bbox=dict(boxstyle='round,pad=0.5', 
+                                facecolor='#1e1e2e', 
+                                edgecolor='#00ff88',
+                                alpha=0.8))
+        
+        # Labels laterali
+        self.ax_3d.text(base/2, -0.3, f'base={base}',
+                       ha='center', fontsize=12, color='#ff6b6b')
+        self.ax_3d.text(-0.3, altezza/2, f'h={altezza}',
+                       ha='right', fontsize=12, color='#ff6b6b')
+        
+        # Limiti
+        lim = max(base, altezza) * 1.3
+        self.ax_3d.set_xlim(-lim*0.2, lim)
+        self.ax_3d.set_ylim(-lim*0.2, lim)
+        self.ax_3d.set_aspect('equal')
+        self.ax_3d.set_title(f'🔺 Triangolo - Base {base}, Altezza {altezza}',
+                            fontsize=16, fontweight='bold', 
+                            color='#ff6b6b', pad=15)
+        self.ax_3d.grid(True, alpha=0.3, color='#3d3d5c', linestyle='--')
+        self.ax_3d.set_xlabel('X', color='#888888')
+        self.ax_3d.set_ylabel('Y', color='#888888')
+        
+        # FORZA refresh
+        self.canvas_3d.draw()
+        self.canvas_3d.flush_events()
+        self.canvas_3d.get_tk_widget().update_idletasks()
+        self.canvas_3d.get_tk_widget().update()
+        self.root.update_idletasks()
+        self.root.update()
+        
+        print(f"[VIZ-DEBUG] Triangolo disegnato: base={base}, h={altezza}, area={area:.2f}")
+        return True
+    
     def _plot_sfera_3d(self, comando: str, codice: str, output: str) -> bool:
         """Disegna sfera 3D per calcoli di volume/superficie."""
         print("[VIZ-DEBUG] Disegno sfera 3D...")
