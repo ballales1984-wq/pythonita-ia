@@ -5,6 +5,7 @@ Interfaccia completa: Comando → Codice → Preview 3D animato!
 
 import tkinter as tk
 from tkinter import ttk, scrolledtext, messagebox
+from typing import Dict, Optional, List
 import matplotlib
 matplotlib.use('TkAgg')
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -101,6 +102,10 @@ class PythonitaGUI3D:
         # Agente workflow coordinator
         from pythonita.core.workflow_agent import get_workflow_agent
         self.workflow_agent = get_workflow_agent(status_callback=lambda msg: self.status_var.set(msg))
+        
+        # Connettore 3D per visualizzazioni geometriche
+        from pythonita.visualization.viz_3d_connector import get_viz_3d_connector
+        self.viz_3d_connector = get_viz_3d_connector()
         
         # Modelli 3D
         self.mano = ManoRobotica()
@@ -529,7 +534,7 @@ class PythonitaGUI3D:
             comando=frase,
             generatore=lambda cmd: self._genera_codice_interno(cmd),
             esecutore=lambda cod: self._esegui_codice_interno(cod),
-            visualizzatore=lambda cmd, cod, out: self.auto_visualizer.analizza_e_visualizza(cmd, cod, out)
+            visualizzatore=lambda cmd, cod, out: self._visualizza_intelligente(cmd, cod, out)
         )
         
         # Mostra risultati
@@ -540,6 +545,40 @@ class PythonitaGUI3D:
             self.status_var.set(f"❌ Workflow fallito: {risultato['errori'][0] if risultato['errori'] else 'Unknown'}")
             if risultato['errori']:
                 self.error_logger.log_error(f"Workflow fallito", Exception(risultato['errori'][0]))
+    
+    def _visualizza_intelligente(self, comando: str, codice: str, output: str) -> bool:
+        """
+        Sistema di visualizzazione intelligente che sceglie tra 2D e 3D.
+        
+        Priorità:
+        1. Se geometria → Prova 3D prima
+        2. Se funzione → 2D plot
+        3. Fallback → auto_visualizer standard
+        """
+        visualizzato = False
+        
+        # Prova visualizzazione 3D per geometria
+        if any(kw in comando.lower() for kw in ['cerchio', 'sfera', 'cubo', 'cilindro', 'box']):
+            print("[VIZ] Tentativo visualizzazione 3D...")
+            try:
+                visualizzato = self.viz_3d_connector.visualizza_da_risultato(comando, output, codice)
+                if visualizzato:
+                    print("[VIZ] ✅ Visualizzazione 3D creata!")
+                    return True
+            except Exception as e:
+                print(f"[VIZ] 3D fallito: {e}, provo 2D...")
+        
+        # Fallback: visualizzatore 2D standard
+        if not visualizzato:
+            print("[VIZ] Uso visualizzatore 2D...")
+            try:
+                visualizzato = self.auto_visualizer.analizza_e_visualizza(comando, codice, output)
+                if visualizzato:
+                    print("[VIZ] ✅ Visualizzazione 2D creata!")
+            except Exception as e:
+                print(f"[VIZ] Anche 2D fallito: {e}")
+        
+        return visualizzato
     
     def _genera_codice_interno(self, comando: str) -> str:
         """Genera codice (chiamato dall'agente)."""
