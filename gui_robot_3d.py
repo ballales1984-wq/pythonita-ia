@@ -1063,7 +1063,7 @@ class PythonitaGUI3D:
         self.ax_3d.set_ylim([0, limite])
         self.ax_3d.set_zlim([-limite, limite])
         self.ax_3d.view_init(elev=20, azim=45)
-        self.ax.grid(True, alpha=0.3)
+        self.ax_3d.grid(True, alpha=0.3)
         
         # Disegna palmo
         larghezza = self.mano.dimensioni.LARGHEZZA_PALMO
@@ -1091,7 +1091,7 @@ class PythonitaGUI3D:
         # Info stato
         perc = self._calcola_chiusura()
         info = f"Chiusura: {perc:.0f}%"
-        self.ax.text2D(0.02, 0.98, info, transform=self.ax.transAxes,
+        self.ax_3d.text2D(0.02, 0.98, info, transform=self.ax.transAxes,
                       fontsize=9, verticalalignment='top',
                       bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.8))
         
@@ -1112,7 +1112,7 @@ class PythonitaGUI3D:
         self.ax_3d.set_ylim([0, limite])
         self.ax_3d.set_zlim([0, limite])
         self.ax_3d.view_init(elev=15, azim=45)
-        self.ax.grid(True, alpha=0.3)
+        self.ax_3d.grid(True, alpha=0.3)
         
         # Calcola posizioni
         p0 = np.array([0, 0, 30])
@@ -1137,7 +1137,7 @@ class PythonitaGUI3D:
         
         # Info
         info = f"Spalla: {self.braccio.angolo_spalla}°\nGomito: {self.braccio.angolo_gomito}°"
-        self.ax.text2D(0.02, 0.98, info, transform=self.ax.transAxes,
+        self.ax_3d.text2D(0.02, 0.98, info, transform=self.ax.transAxes,
                       fontsize=9, verticalalignment='top',
                       bbox=dict(boxstyle='round', facecolor='lightblue', alpha=0.8))
         
@@ -1260,14 +1260,14 @@ class PythonitaGUI3D:
             
             # Aggiorna matplotlib per tema scuro/chiaro
             if tema.bg_primary == '#1E1E1E' or tema.bg_primary == '#000000':  # Dark themes
-                self.fig.patch.set_facecolor('#2D2D30')
+                self.figure_3d.patch.set_facecolor('#2D2D30')
                 self.ax_3d.set_facecolor('#1E1E1E')
                 self.ax.xaxis.label.set_color(tema.fg_primary)
                 self.ax.yaxis.label.set_color(tema.fg_primary)
                 self.ax.zaxis.label.set_color(tema.fg_primary)
                 self.ax.tick_params(colors=tema.fg_primary)
             else:  # Light theme
-                self.fig.patch.set_facecolor('white')
+                self.figure_3d.patch.set_facecolor('white')
                 self.ax_3d.set_facecolor('#f0f0f0')
                 self.ax.xaxis.label.set_color(tema.fg_primary)
                 self.ax.yaxis.label.set_color(tema.fg_primary)
