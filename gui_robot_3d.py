@@ -381,10 +381,45 @@ class PythonitaGUI3D:
                                                     bg='#f9f9f9')
         self.output_box.pack(fill=tk.BOTH, expand=True, pady=5)
     
+    def _setup_colonna_risultati(self, parent):
+        """Setup colonna risultati esecuzione."""
+        frame = tk.Frame(parent, bg=self.colors['bg_dark'])
+        frame.grid(row=0, column=2, sticky='nsew', padx=5)
+        
+        # Header
+        header_frame = tk.Frame(frame, bg=self.colors['bg_dark'])
+        header_frame.pack(fill=tk.X, pady=(0, 5))
+        
+        tk.Label(header_frame, text="📊 Risultati Esecuzione",
+                font=('Segoe UI', 12, 'bold'),
+                bg=self.colors['bg_dark'],
+                fg=self.colors['success']).pack(anchor='w')
+        
+        tk.Label(header_frame, text="Output del codice eseguito",
+                font=('Segoe UI', 9),
+                bg=self.colors['bg_dark'],
+                fg=self.colors['text_dim']).pack(anchor='w')
+        
+        # Area risultati
+        self.results_box = scrolledtext.ScrolledText(frame, height=25, width=35,
+                                                     font=('Consolas', 11), 
+                                                     wrap=tk.WORD,
+                                                     bg='#0d1117',
+                                                     fg='#00ff88',
+                                                     insertbackground='#00ff88',
+                                                     selectbackground='#00d4ff')
+        self.results_box.pack(fill=tk.BOTH, expand=True, pady=5)
+        
+        # Messaggio iniziale
+        self.results_box.insert('1.0', "⏳ In attesa di esecuzione...\n\n"
+                                      "Il risultato apparirà qui dopo\n"
+                                      "aver cliccato ⚡ GENERA")
+        self.results_box.config(state=tk.DISABLED)
+    
     def _setup_colonna_3d(self, parent):
         """Setup colonna visualizzatore 3D."""
         frame = tk.Frame(parent)
-        frame.grid(row=0, column=2, sticky='nsew', padx=5)
+        frame.grid(row=0, column=3, sticky='nsew', padx=5)
         
         tk.Label(frame, text="Preview 3D (Misure Reali)",
                 font=('Arial', 11, 'bold')).pack(anchor='w')
@@ -528,13 +563,23 @@ class PythonitaGUI3D:
             output = output_buffer.getvalue()
             errors = error_buffer.getvalue()
             
+            # Mostra risultati nella colonna dedicata
+            self.results_box.config(state=tk.NORMAL)
+            self.results_box.delete('1.0', tk.END)
+            
             if output:
                 print(f"[EXEC] Output: {output}")
-                messagebox.showinfo("✅ Risultato", f"Output:\n{output}")
+                self.results_box.insert('1.0', f"✅ RISULTATO:\n\n{output}\n")
+                self.results_box.tag_add("result", "1.0", "2.0")
+                self.results_box.tag_config("result", foreground='#00ff88', font=('Segoe UI', 12, 'bold'))
+            else:
+                self.results_box.insert('1.0', "✅ Codice eseguito senza output.\n\n")
             
             if errors:
                 print(f"[EXEC] Errors: {errors}")
-                messagebox.showwarning("⚠️ Warning", f"Errori/Warning:\n{errors}")
+                self.results_box.insert(tk.END, f"\n⚠️ WARNING:\n{errors}")
+            
+            self.results_box.config(state=tk.DISABLED)
                 
             # Se ha generato grafico matplotlib, mostra
             if 'plt.show()' in codice or 'matplotlib' in codice:
