@@ -439,12 +439,23 @@ class PythonitaGUI3D:
         self.results_box.config(state=tk.DISABLED)
     
     def _setup_colonna_3d(self, parent):
-        """Setup colonna visualizzatore 3D."""
-        frame = tk.Frame(parent)
+        """Setup colonna visualizzazione DINAMICA (controllata da AI)."""
+        frame = tk.Frame(parent, bg=self.colors['bg_dark'])
         frame.grid(row=0, column=3, sticky='nsew', padx=5)
         
-        tk.Label(frame, text="Preview 3D (Misure Reali)",
-                font=('Arial', 11, 'bold')).pack(anchor='w')
+        # Header
+        header_frame = tk.Frame(frame, bg=self.colors['bg_dark'])
+        header_frame.pack(fill=tk.X, pady=(0, 5))
+        
+        tk.Label(header_frame, text="🎨 Visualizzazione AI",
+                font=('Segoe UI', 12, 'bold'),
+                bg=self.colors['bg_dark'],
+                fg=self.colors['accent']).pack(anchor='w')
+        
+        tk.Label(header_frame, text="L'AI sceglie la migliore visualizzazione",
+                font=('Segoe UI', 9),
+                bg=self.colors['bg_dark'],
+                fg=self.colors['text_dim']).pack(anchor='w')
         
         # Canvas matplotlib per 3D
         self.fig = Figure(figsize=(6, 6), dpi=100)
@@ -548,37 +559,179 @@ class PythonitaGUI3D:
     
     def _visualizza_intelligente(self, comando: str, codice: str, output: str) -> bool:
         """
-        Sistema di visualizzazione intelligente che sceglie tra 2D e 3D.
+        AI sceglie visualizzazione appropriata e la mostra nella COLONNA 4.
         
-        Priorità:
-        1. Se geometria → Prova 3D prima
-        2. Se funzione → 2D plot
-        3. Fallback → auto_visualizer standard
+        Logica:
+        - Geometria (cerchio, cubo) → Plot geometrico nella canvas
+        - Robot (mano, braccio) → Modello 3D robot
+        - Funzione → Grafico matematico
+        - Tutto nella stessa colonna 4!
         """
+        comando_lower = comando.lower()
         visualizzato = False
         
-        # Prova visualizzazione 3D per geometria
-        if any(kw in comando.lower() for kw in ['cerchio', 'sfera', 'cubo', 'cilindro', 'box']):
-            print("[VIZ] Tentativo visualizzazione 3D...")
-            try:
-                visualizzato = self.viz_3d_connector.visualizza_da_risultato(comando, output, codice)
-                if visualizzato:
-                    print("[VIZ] ✅ Visualizzazione 3D creata!")
-                    return True
-            except Exception as e:
-                print(f"[VIZ] 3D fallito: {e}, provo 2D...")
+        try:
+            # Pulisci canvas precedente
+            self._pulisci_canvas_3d()
+            
+            # GEOMETRIA → Plot 2D/3D
+            if any(kw in comando_lower for kw in ['cerchio', 'area', 'quadrato', 'triangolo']):
+                print("[VIZ-AI] Riconosciuto: GEOMETRIA")
+                visualizzato = self._plot_geometria_in_canvas(comando, output)
+            
+            # ROBOT → Mano/Braccio 3D
+            elif any(kw in comando_lower for kw in ['mano', 'braccio', 'afferra', 'apri', 'chiudi']):
+                print("[VIZ-AI] Riconosciuto: ROBOT")
+                visualizzato = self._plot_robot_in_canvas(comando)
+            
+            # SFERA/CUBO 3D → Oggetti 3D
+            elif any(kw in comando_lower for kw in ['sfera', 'cubo', 'cilindro', 'box', 'volume']):
+                print("[VIZ-AI] Riconosciuto: OGGETTO 3D")
+                visualizzato = self._plot_oggetto_3d_in_canvas(comando, output)
+            
+            # FUNZIONE MATEMATICA → Plot funzione
+            elif any(kw in comando_lower for kw in ['funzione', 'seno', 'coseno', 'sin', 'cos']):
+                print("[VIZ-AI] Riconosciuto: FUNZIONE")
+                visualizzato = self._plot_funzione_in_canvas(comando)
+            
+            # LISTA/ARRAY → Grafico dati
+            elif 'fibonacci' in comando_lower or 'lista' in comando_lower:
+                print("[VIZ-AI] Riconosciuto: SEQUENZA")
+                visualizzato = self._plot_sequenza_in_canvas(output)
+            
+            else:
+                # Default: mostra testo risultato
+                print("[VIZ-AI] Nessuna visualizzazione specifica, mostra testo")
+                self._mostra_testo_in_canvas(output)
+                visualizzato = True
+            
+            if visualizzato:
+                print("[VIZ-AI] ✅ Visualizzazione completata nella colonna 4!")
+                return True
+                
+        except Exception as e:
+            print(f"[VIZ-AI] Errore: {e}")
+            self.error_logger.log_error("Errore visualizzazione AI", e)
         
-        # Fallback: visualizzatore 2D standard
-        if not visualizzato:
-            print("[VIZ] Uso visualizzatore 2D...")
+        return False
+    
+    def _pulisci_canvas_3d(self):
+        """Pulisce canvas 3D per nuova visualizzazione."""
+        # Pulisce il canvas matplotlib esistente
+        if hasattr(self, 'canvas_3d') and self.canvas_3d:
             try:
-                visualizzato = self.auto_visualizer.analizza_e_visualizza(comando, codice, output)
-                if visualizzato:
-                    print("[VIZ] ✅ Visualizzazione 2D creata!")
-            except Exception as e:
-                print(f"[VIZ] Anche 2D fallito: {e}")
+                self.figure_3d.clear()
+                self.canvas_3d.draw()
+            except:
+                pass
+    
+    def _plot_geometria_in_canvas(self, comando: str, risultato: str) -> bool:
+        """Plotta geometria 2D nella canvas colonna 4."""
+        # Usa auto_visualizer ma integrato nella canvas
+        raggio = self._estrai_numero_da_comando(comando)
+        if not raggio:
+            raggio = 3  # Default
         
-        return visualizzato
+        # Crea nuovo plot nella canvas
+        self.ax_3d.clear()
+        self.ax_3d.set_facecolor('#0d1117')
+        
+        # Disegna cerchio
+        import matplotlib.patches as patches
+        circle = patches.Circle((0, 0), raggio,
+                               fill=True,
+                               facecolor='#00d4ff',
+                               edgecolor='#00ff88',
+                               linewidth=3,
+                               alpha=0.6)
+        self.ax_3d.add_patch(circle)
+        
+        # Testo area
+        area = np.pi * raggio**2
+        self.ax_3d.text(0, raggio + 0.5, f'Area = {area:.2f}',
+                       ha='center', va='bottom',
+                       fontsize=14, fontweight='bold',
+                       color='#00ff88')
+        
+        lim = raggio * 1.5
+        self.ax_3d.set_xlim(-lim, lim)
+        self.ax_3d.set_ylim(-lim, lim)
+        self.ax_3d.set_aspect('equal')
+        self.ax_3d.set_title(f'Cerchio - R={raggio}',
+                            fontsize=14, fontweight='bold', color='#00d4ff')
+        
+        self.canvas_3d.draw()
+        return True
+    
+    def _plot_robot_in_canvas(self, comando: str) -> bool:
+        """Mostra mano/braccio robot nella canvas."""
+        # Usa il visualizzatore robot esistente
+        print("[VIZ-AI] Rendering mano robotica...")
+        self._aggiorna_3d()
+        return True
+    
+    def _plot_oggetto_3d_in_canvas(self, comando: str, risultato: str) -> bool:
+        """Plotta oggetto 3D nella canvas."""
+        # Per ora usa visualizzatore esterno, poi integreremo nella canvas
+        self.viz_3d_connector.visualizza_da_risultato(comando, risultato, "")
+        return True
+    
+    def _plot_funzione_in_canvas(self, comando: str) -> bool:
+        """Plotta funzione matematica nella canvas."""
+        self.ax_3d.clear()
+        self.ax_3d.set_facecolor('#0d1117')
+        
+        x = np.linspace(-2*np.pi, 2*np.pi, 1000)
+        
+        if 'seno' in comando.lower() or 'sin' in comando.lower():
+            y = np.sin(x)
+            title = 'y = sin(x)'
+        else:
+            y = np.cos(x)
+            title = 'y = cos(x)'
+        
+        self.ax_3d.plot(x, y, color='#00d4ff', linewidth=2.5)
+        self.ax_3d.grid(True, alpha=0.2, color='#3d3d5c')
+        self.ax_3d.set_title(title, fontsize=14, fontweight='bold', color='#00d4ff')
+        
+        self.canvas_3d.draw()
+        return True
+    
+    def _plot_sequenza_in_canvas(self, output: str) -> bool:
+        """Plotta sequenza numeri nella canvas."""
+        try:
+            # Estrai numeri dall'output
+            import re
+            numeri = [float(n) for n in re.findall(r'\d+(?:\.\d+)?', output)]
+            
+            if numeri:
+                self.ax_3d.clear()
+                self.ax_3d.set_facecolor('#0d1117')
+                self.ax_3d.plot(numeri, 'o-', color='#00d4ff', linewidth=2, markersize=8)
+                self.ax_3d.grid(True, alpha=0.2, color='#3d3d5c')
+                self.ax_3d.set_title('Sequenza', fontsize=14, fontweight='bold', color='#00d4ff')
+                self.canvas_3d.draw()
+                return True
+        except:
+            pass
+        return False
+    
+    def _mostra_testo_in_canvas(self, testo: str):
+        """Mostra testo nella canvas."""
+        self.ax_3d.clear()
+        self.ax_3d.set_facecolor('#0d1117')
+        self.ax_3d.axis('off')
+        self.ax_3d.text(0.5, 0.5, testo[:200],
+                       ha='center', va='center',
+                       fontsize=12, color='#e0e0e0',
+                       wrap=True)
+        self.canvas_3d.draw()
+    
+    def _estrai_numero_da_comando(self, comando: str) -> Optional[float]:
+        """Estrae primo numero dal comando."""
+        import re
+        match = re.search(r'(\d+(?:\.\d+)?)', comando)
+        return float(match.group(1)) if match else None
     
     def _genera_codice_interno(self, comando: str) -> str:
         """Genera codice (chiamato dall'agente)."""
