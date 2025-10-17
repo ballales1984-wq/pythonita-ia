@@ -94,6 +94,10 @@ class PythonitaGUI3D:
         self.error_logger = get_error_logger()
         self.error_logger.log_info("GUI avviata - Pythonita IA v3.4+")
         
+        # Sistema visualizzazione automatica
+        from pythonita.visualization.auto_visualizer import get_auto_visualizer
+        self.auto_visualizer = get_auto_visualizer()
+        
         # Modelli 3D
         self.mano = ManoRobotica()
         self.braccio = BraccioRobotico()
@@ -591,13 +595,27 @@ class PythonitaGUI3D:
             
             self.results_box.config(state=tk.DISABLED)
                 
-            # Se ha generato grafico matplotlib, mostra
-            if 'plt.show()' in codice or 'matplotlib' in codice:
-                print("[EXEC] Grafico matplotlib rilevato")
-                import matplotlib.pyplot as plt
-                plt.show()
+            # VISUALIZZAZIONE AUTOMATICA INTELLIGENTE
+            print("[VIZ] Analisi comando per visualizzazione...")
+            frase_originale = self.input_box.get('1.0', tk.END).strip()
             
-            self.status_var.set("✅ Codice eseguito!")
+            try:
+                # L'AI decide se e come visualizzare
+                ha_visualizzato = self.auto_visualizer.analizza_e_visualizza(
+                    comando=frase_originale,
+                    codice=codice,
+                    risultato=output
+                )
+                
+                if ha_visualizzato:
+                    print("[VIZ] ✅ Grafico generato automaticamente!")
+                    self.status_var.set("✅ Codice eseguito + grafico visualizzato!")
+                else:
+                    print("[VIZ] Nessuna visualizzazione necessaria")
+                    self.status_var.set("✅ Codice eseguito!")
+            except Exception as viz_error:
+                print(f"[VIZ] Errore visualizzazione: {viz_error}")
+                self.status_var.set("✅ Codice eseguito!")
             
         except Exception as e:
             print(f"[EXEC] ERRORE esecuzione: {e}")
