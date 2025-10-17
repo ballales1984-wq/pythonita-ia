@@ -640,33 +640,49 @@ class PythonitaGUI3D:
         return False
     
     def _pulisci_canvas_3d(self):
-        """Pulisce canvas 3D per nuova visualizzazione."""
-        # Pulisce il canvas matplotlib esistente
-        if hasattr(self, 'canvas_3d') and self.canvas_3d:
-            try:
-                self.figure_3d.clear()
-                self.canvas_3d.draw()
-            except:
-                pass
+        """Pulisce canvas 3D per nuova visualizzazione e resetta modalità."""
+        print("[VIZ-DEBUG] Pulizia canvas 3D...")
+        
+        # Rimuovi asse corrente
+        try:
+            self.ax_3d.clear()
+            self.ax_3d.remove()
+        except:
+            pass
+        
+        # Ricrea sempre in 2D (convertiremo a 3D solo se necessario)
+        self.ax_3d = self.figure_3d.add_subplot(111)
+        self.ax_3d.set_facecolor('#0d1117')
+        self.is_3d_mode = False
+        
+        # Refresh
+        self.canvas_3d.draw()
+        self.canvas_3d.flush_events()
+        
+        print("[VIZ-DEBUG] Canvas pulito e pronto!")
     
     def _plot_geometria_in_canvas(self, comando: str, risultato: str) -> bool:
         """Plotta geometria 2D nella canvas colonna 4."""
-        # Converti a 2D se necessario
-        if self.is_3d_mode:
+        print(f"[VIZ-DEBUG] Inizio plot geometria, is_3d_mode={self.is_3d_mode}")
+        
+        # FORZA reset a 2D per geometria
+        try:
             self.ax_3d.clear()
             self.ax_3d.remove()
-            self.ax_3d = self.figure_3d.add_subplot(111)
-            self.ax_3d.set_facecolor('#0d1117')
-            self.is_3d_mode = False
+        except:
+            pass
+        
+        # Ricrea asse 2D fresco
+        self.ax_3d = self.figure_3d.add_subplot(111)
+        self.ax_3d.set_facecolor('#0d1117')
+        self.is_3d_mode = False
+        
+        print("[VIZ-DEBUG] Asse 2D ricreato")
         
         # Usa auto_visualizer ma integrato nella canvas
         raggio = self._estrai_numero_da_comando(comando)
         if not raggio:
             raggio = 3  # Default
-        
-        # Crea nuovo plot nella canvas
-        self.ax_3d.clear()
-        self.ax_3d.set_facecolor('#0d1117')
         
         # Disegna cerchio
         import matplotlib.patches as patches
