@@ -180,27 +180,12 @@ class PythonitaGUI3D:
         tk.Label(frame_controlli, text="Pythonita IA - Visualizzatore 3D Robot",
                 font=('Arial', 14, 'bold'), bg='#2c3e50', fg='white').pack()
         
-        # Frame template e tema
+        # Template impostato automaticamente dall'AI (generico)
+        self.template_var = tk.StringVar(value='generico')  # AI sceglie automaticamente
+        
+        # Frame settings (solo tema se disponibile)
         frame_settings = tk.Frame(frame_controlli, bg='#2c3e50')
         frame_settings.pack(pady=5)
-        
-        # Template selector
-        frame_template = tk.Frame(frame_settings, bg='#2c3e50')
-        frame_template.pack(side=tk.LEFT, padx=20)
-        
-        tk.Label(frame_template, text="Template:", bg='#2c3e50', fg='white',
-                font=('Arial', 10)).pack(side=tk.LEFT, padx=5)
-        
-        self.template_var = tk.StringVar(value='robot')
-        templates = ['robot', 'mano_bionica', 'generico']
-        
-        for tmpl in templates:
-            rb = tk.Radiobutton(frame_template, text=tmpl.capitalize(),
-                              variable=self.template_var, value=tmpl,
-                              command=self._cambia_template,
-                              bg='#2c3e50', fg='white', selectcolor='#34495e',
-                              font=('Arial', 9))
-            rb.pack(side=tk.LEFT, padx=5)
         
         # Theme selector
         if THEMES_AVAILABLE:
