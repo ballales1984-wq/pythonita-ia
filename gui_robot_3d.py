@@ -1091,7 +1091,7 @@ class PythonitaGUI3D:
         # Info stato
         perc = self._calcola_chiusura()
         info = f"Chiusura: {perc:.0f}%"
-        self.ax_3d.text2D(0.02, 0.98, info, transform=self.ax.transAxes,
+        self.ax_3d.text2D(0.02, 0.98, info, transform=self.ax_3d.transAxes,
                       fontsize=9, verticalalignment='top',
                       bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.8))
         
@@ -1137,7 +1137,7 @@ class PythonitaGUI3D:
         
         # Info
         info = f"Spalla: {self.braccio.angolo_spalla}°\nGomito: {self.braccio.angolo_gomito}°"
-        self.ax_3d.text2D(0.02, 0.98, info, transform=self.ax.transAxes,
+        self.ax_3d.text2D(0.02, 0.98, info, transform=self.ax_3d.transAxes,
                       fontsize=9, verticalalignment='top',
                       bbox=dict(boxstyle='round', facecolor='lightblue', alpha=0.8))
         
