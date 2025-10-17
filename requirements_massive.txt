@@ -1,0 +1,49 @@
+# Librerie ML/CV massive per Pythonita IA Extended
+
+# Deep Learning Frameworks
+tensorflow>=2.15.0              # ~2.5 GB
+torch>=2.1.0                    # ~1.8 GB
+torchvision>=0.16.0            # ~300 MB
+
+# Computer Vision
+opencv-python>=4.8.0           # ~90 MB
+opencv-contrib-python>=4.8.0   # ~200 MB
+albumentations>=1.3.0          # ~50 MB
+imgaug>=0.4.0                  # ~20 MB
+
+# Machine Learning
+scikit-learn>=1.3.0            # ~100 MB
+xgboost>=2.0.0                 # ~150 MB
+lightgbm>=4.1.0                # ~80 MB
+catboost>=1.2                  # ~200 MB
+
+# NLP Advanced
+transformers>=4.35.0           # ~400 MB
+tokenizers>=0.15.0             # ~50 MB
+datasets>=2.15.0               # ~100 MB
+sentencepiece>=0.1.99          # ~20 MB
+
+# Audio Processing
+librosa>=0.10.0                # ~80 MB
+soundfile>=0.12.0              # ~30 MB
+audioread>=3.0.0               # ~10 MB
+
+# Scientific Computing Extended
+scipy>=1.11.0                  # ~150 MB
+sympy>=1.12                    # ~80 MB
+statsmodels>=0.14.0            # ~90 MB
+
+# Visualization Advanced
+plotly>=5.18.0                 # ~100 MB
+seaborn>=0.13.0                # ~20 MB
+bokeh>=3.3.0                   # ~80 MB
+
+# Data Processing
+polars>=0.19.0                 # ~50 MB
+dask>=2023.11.0                # ~100 MB
+vaex>=4.17.0                   # ~60 MB
+
+# Utilities
+tqdm>=4.66.0
+joblib>=1.3.0
+cloudpickle>=3.0.0
