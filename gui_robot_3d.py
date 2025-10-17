@@ -89,6 +89,11 @@ class PythonitaGUI3D:
         # Generatore con template generico e AI attiva (auto-riconosce tipo comando)
         self.generatore = GeneratoreCodice(template='generico', use_ai=True, use_cache=True)
         
+        # Sistema logging errori
+        from pythonita.utils.error_logger import get_error_logger
+        self.error_logger = get_error_logger()
+        self.error_logger.log_info("GUI avviata - Pythonita IA v3.4+")
+        
         # Modelli 3D
         self.mano = ManoRobotica()
         self.braccio = BraccioRobotico()
@@ -528,6 +533,7 @@ class PythonitaGUI3D:
             self._esegui_codice_automatico()
         except Exception as e:
             print(f"[DEBUG] ERRORE: {e}")  # DEBUG
+            self.error_logger.log_error(f"Errore generazione per '{frase}'", e)
             messagebox.showerror("Errore", f"Errore generazione: {e}")
             self.status_var.set("❌ Errore generazione")
     
@@ -595,9 +601,24 @@ class PythonitaGUI3D:
             
         except Exception as e:
             print(f"[EXEC] ERRORE esecuzione: {e}")
+            self.error_logger.log_error("Errore esecuzione codice", e)
+            self.error_logger.log_esecuzione(successo=False, errore=str(e))
             messagebox.showerror("❌ Errore Esecuzione", 
                                f"Errore durante l'esecuzione:\n{str(e)[:200]}")
             self.status_var.set("❌ Errore esecuzione")
+    
+    def _apri_log(self):
+        """Apre cartella log in Esplora Risorse."""
+        try:
+            self.error_logger.apri_cartella_log()
+            messagebox.showinfo("📋 Log Aperti", 
+                              f"Cartella log aperta:\n{self.error_logger.log_dir}\n\n"
+                              f"File disponibili:\n"
+                              f"• pythonita_[data].log (generale)\n"
+                              f"• errors_[data].log (solo errori)\n"
+                              f"• session_[data].json (statistiche)")
+        except Exception as e:
+            messagebox.showerror("Errore", f"Impossibile aprire log: {e}")
     
     def _reset_tutto(self):
         """Pulisce input e output per nuova domanda."""
