@@ -42,11 +42,11 @@ except ImportError:
     THEMES_AVAILABLE = False
     print("[WARN] Theme system not available")
 
-# Speech Recognition (DISABILITATO TEMPORANEAMENTE - problemi volume)
+# Speech Recognition (RIATTIVATO - proviamo con AI migliorata)
 try:
     from pythonita.utils.speech_recognition_module import get_speech_recognizer
-    SPEECH_RECOGNITION_AVAILABLE = False  # Disabilitato per ora, focus su Arduino
-    print("[INFO] Speech recognition disabilitato - focus su Arduino")
+    SPEECH_RECOGNITION_AVAILABLE = True  # ✅ RIATTIVATO!
+    print("[INFO] ✅ Speech recognition ATTIVO - Push-to-talk disponibile")
 except ImportError:
     SPEECH_RECOGNITION_AVAILABLE = False
     print("[WARN] Speech recognition not available")
