@@ -355,6 +355,18 @@ class PythonitaGUI3D:
             btn_genera['fg'] = '#1e1e2e'
         btn_genera.bind('<Enter>', on_enter)
         btn_genera.bind('<Leave>', on_leave)
+        
+        # PULSANTE PULISCI/RESET
+        btn_reset = tk.Button(frame, text="🔄 PULISCI & NUOVO", 
+                             command=self._reset_tutto,
+                             font=('Segoe UI', 9, 'bold'), 
+                             bg='#3d3d5c', fg='#e0e0e0',
+                             activebackground='#ffaa00',
+                             activeforeground='white',
+                             relief=tk.FLAT, 
+                             cursor='hand2',
+                             bd=0)
+        btn_reset.pack(fill=tk.X, pady=3, ipady=6)
     
     def _setup_colonna_codice(self, parent):
         """Setup colonna codice."""
@@ -475,6 +487,20 @@ class PythonitaGUI3D:
             print(f"[DEBUG] ERRORE: {e}")  # DEBUG
             messagebox.showerror("Errore", f"Errore generazione: {e}")
             self.status_var.set("❌ Errore generazione")
+    
+    def _reset_tutto(self):
+        """Pulisce input e output per nuova domanda."""
+        print("[DEBUG] Reset sistema - nuova domanda")
+        self.input_box.delete('1.0', tk.END)
+        self.output_box.delete('1.0', tk.END)
+        self.status_var.set("✅ Pronto per nuova domanda")
+        
+        # Pulisce anche cache se necessario
+        if self.generatore.cache:
+            # Non pulire cache, solo reset UI
+            pass
+        
+        print("[DEBUG] Sistema resettato, pronto!")
     
     def _on_key_release(self, event):
         """[RIMOSSO] Non auto-genera più."""
