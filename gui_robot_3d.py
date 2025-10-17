@@ -481,7 +481,7 @@ class PythonitaGUI3D:
         
         self.canvas_3d = FigureCanvasTkAgg(self.figure_3d, master=frame)
         self.canvas_3d.draw()
-        self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True, pady=5)
+        self.canvas_3d.get_tk_widget().pack(fill=tk.BOTH, expand=True, pady=5)
         
         # Disegna mano iniziale
         self._disegna_mano_3d()
