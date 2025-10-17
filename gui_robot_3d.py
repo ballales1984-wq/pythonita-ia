@@ -708,11 +708,20 @@ class PythonitaGUI3D:
         self.ax_3d.set_xlabel('X', color='#888888')
         self.ax_3d.set_ylabel('Y', color='#888888')
         
-        # FORZA l'aggiornamento
+        # FORZA l'aggiornamento canvas matplotlib
         self.canvas_3d.draw()
         self.canvas_3d.flush_events()
         
+        # FORZA l'aggiornamento Tkinter
+        self.canvas_3d.get_tk_widget().update_idletasks()
+        self.canvas_3d.get_tk_widget().update()
+        
+        # Forza refresh della finestra principale
+        self.root.update_idletasks()
+        self.root.update()
+        
         print(f"[VIZ-DEBUG] Cerchio disegnato: r={raggio}, area={area:.2f}")
+        print(f"[VIZ-DEBUG] Canvas aggiornato e visibile!")
         return True
     
     def _plot_robot_in_canvas(self, comando: str) -> bool:
