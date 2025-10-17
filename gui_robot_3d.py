@@ -1262,17 +1262,17 @@ class PythonitaGUI3D:
             if tema.bg_primary == '#1E1E1E' or tema.bg_primary == '#000000':  # Dark themes
                 self.figure_3d.patch.set_facecolor('#2D2D30')
                 self.ax_3d.set_facecolor('#1E1E1E')
-                self.ax.xaxis.label.set_color(tema.fg_primary)
-                self.ax.yaxis.label.set_color(tema.fg_primary)
-                self.ax.zaxis.label.set_color(tema.fg_primary)
-                self.ax.tick_params(colors=tema.fg_primary)
+                self.ax_3d.xaxis.label.set_color(tema.fg_primary)
+                self.ax_3d.yaxis.label.set_color(tema.fg_primary)
+                self.ax_3d.zaxis.label.set_color(tema.fg_primary)
+                self.ax_3d.tick_params(colors=tema.fg_primary)
             else:  # Light theme
                 self.figure_3d.patch.set_facecolor('white')
                 self.ax_3d.set_facecolor('#f0f0f0')
-                self.ax.xaxis.label.set_color(tema.fg_primary)
-                self.ax.yaxis.label.set_color(tema.fg_primary)
-                self.ax.zaxis.label.set_color(tema.fg_primary)
-                self.ax.tick_params(colors=tema.fg_primary)
+                self.ax_3d.xaxis.label.set_color(tema.fg_primary)
+                self.ax_3d.yaxis.label.set_color(tema.fg_primary)
+                self.ax_3d.zaxis.label.set_color(tema.fg_primary)
+                self.ax_3d.tick_params(colors=tema.fg_primary)
             
             # Ridisegna canvas
             self.canvas_3d.draw()
