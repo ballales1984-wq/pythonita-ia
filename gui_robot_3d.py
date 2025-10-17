@@ -1050,19 +1050,19 @@ class PythonitaGUI3D:
     
     def _disegna_mano_3d(self):
         """Disegna mano 3D."""
-        self.ax.clear()
+        self.ax_3d.clear()
         
         # Setup assi
-        self.ax.set_xlabel('X (cm)', fontsize=8)
-        self.ax.set_ylabel('Y (cm)', fontsize=8)
-        self.ax.set_zlabel('Z (cm)', fontsize=8)
-        self.ax.set_title('Mano Robotica', fontsize=10, fontweight='bold')
+        self.ax_3d.set_xlabel('X (cm)', fontsize=8)
+        self.ax_3d.set_ylabel('Y (cm)', fontsize=8)
+        self.ax_3d.set_zlabel('Z (cm)', fontsize=8)
+        self.ax_3d.set_title('Mano Robotica', fontsize=10, fontweight='bold')
         
         limite = 12
-        self.ax.set_xlim([-limite, limite])
-        self.ax.set_ylim([0, limite])
-        self.ax.set_zlim([-limite, limite])
-        self.ax.view_init(elev=20, azim=45)
+        self.ax_3d.set_xlim([-limite, limite])
+        self.ax_3d.set_ylim([0, limite])
+        self.ax_3d.set_zlim([-limite, limite])
+        self.ax_3d.view_init(elev=20, azim=45)
         self.ax.grid(True, alpha=0.3)
         
         # Disegna palmo
@@ -1071,7 +1071,7 @@ class PythonitaGUI3D:
             [-larghezza/2, 0, -2], [larghezza/2, 0, -2],
             [larghezza/2, 0, 2], [-larghezza/2, 0, 2], [-larghezza/2, 0, -2]
         ])
-        self.ax.plot(vertices[:, 0], vertices[:, 1], vertices[:, 2],
+        self.ax_3d.plot(vertices[:, 0], vertices[:, 1], vertices[:, 2],
                     'k-', linewidth=2, label='Palmo')
         
         # Disegna dita
@@ -1086,7 +1086,7 @@ class PythonitaGUI3D:
             ys = [v[1] + pos_base[1] for v in vertici]
             zs = [v[2] + pos_base[2] for v in vertici]
             
-            self.ax.plot(xs, ys, zs, color=colore, linewidth=2, marker='o', markersize=3)
+            self.ax_3d.plot(xs, ys, zs, color=colore, linewidth=2, marker='o', markersize=3)
         
         # Info stato
         perc = self._calcola_chiusura()
@@ -1095,23 +1095,23 @@ class PythonitaGUI3D:
                       fontsize=9, verticalalignment='top',
                       bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.8))
         
-        self.canvas.draw()
+        self.canvas_3d.draw()
     
     def _disegna_braccio_3d(self):
         """Disegna braccio 3D."""
-        self.ax.clear()
+        self.ax_3d.clear()
         
         # Setup
-        self.ax.set_xlabel('X (cm)', fontsize=8)
-        self.ax.set_ylabel('Y (cm)', fontsize=8)
-        self.ax.set_zlabel('Z (cm)', fontsize=8)
-        self.ax.set_title('Braccio Robotico', fontsize=10, fontweight='bold')
+        self.ax_3d.set_xlabel('X (cm)', fontsize=8)
+        self.ax_3d.set_ylabel('Y (cm)', fontsize=8)
+        self.ax_3d.set_zlabel('Z (cm)', fontsize=8)
+        self.ax_3d.set_title('Braccio Robotico', fontsize=10, fontweight='bold')
         
         limite = 40
-        self.ax.set_xlim([0, limite])
-        self.ax.set_ylim([0, limite])
-        self.ax.set_zlim([0, limite])
-        self.ax.view_init(elev=15, azim=45)
+        self.ax_3d.set_xlim([0, limite])
+        self.ax_3d.set_ylim([0, limite])
+        self.ax_3d.set_zlim([0, limite])
+        self.ax_3d.view_init(elev=15, azim=45)
         self.ax.grid(True, alpha=0.3)
         
         # Calcola posizioni
@@ -1126,14 +1126,14 @@ class PythonitaGUI3D:
         p2 = p1 + np.array([L2 * np.cos(theta2), L2 * np.sin(theta2), 0])
         
         # Disegna
-        self.ax.plot([p0[0], p1[0]], [p0[1], p1[1]], [p0[2], p1[2]],
+        self.ax_3d.plot([p0[0], p1[0]], [p0[1], p1[1]], [p0[2], p1[2]],
                     'b-', linewidth=5, label='Braccio sup.')
-        self.ax.plot([p1[0], p2[0]], [p1[1], p2[1]], [p1[2], p2[2]],
+        self.ax_3d.plot([p1[0], p2[0]], [p1[1], p2[1]], [p1[2], p2[2]],
                     'r-', linewidth=5, label='Avambraccio')
         
-        self.ax.scatter(*p0, color='black', s=80)
-        self.ax.scatter(*p1, color='green', s=80)
-        self.ax.scatter(*p2, color='red', s=80)
+        self.ax_3d.scatter(*p0, color='black', s=80)
+        self.ax_3d.scatter(*p1, color='green', s=80)
+        self.ax_3d.scatter(*p2, color='red', s=80)
         
         # Info
         info = f"Spalla: {self.braccio.angolo_spalla}°\nGomito: {self.braccio.angolo_gomito}°"
@@ -1141,7 +1141,7 @@ class PythonitaGUI3D:
                       fontsize=9, verticalalignment='top',
                       bbox=dict(boxstyle='round', facecolor='lightblue', alpha=0.8))
         
-        self.canvas.draw()
+        self.canvas_3d.draw()
     
     def _calcola_chiusura(self):
         """Calcola percentuale chiusura media."""
@@ -1261,21 +1261,21 @@ class PythonitaGUI3D:
             # Aggiorna matplotlib per tema scuro/chiaro
             if tema.bg_primary == '#1E1E1E' or tema.bg_primary == '#000000':  # Dark themes
                 self.fig.patch.set_facecolor('#2D2D30')
-                self.ax.set_facecolor('#1E1E1E')
+                self.ax_3d.set_facecolor('#1E1E1E')
                 self.ax.xaxis.label.set_color(tema.fg_primary)
                 self.ax.yaxis.label.set_color(tema.fg_primary)
                 self.ax.zaxis.label.set_color(tema.fg_primary)
                 self.ax.tick_params(colors=tema.fg_primary)
             else:  # Light theme
                 self.fig.patch.set_facecolor('white')
-                self.ax.set_facecolor('#f0f0f0')
+                self.ax_3d.set_facecolor('#f0f0f0')
                 self.ax.xaxis.label.set_color(tema.fg_primary)
                 self.ax.yaxis.label.set_color(tema.fg_primary)
                 self.ax.zaxis.label.set_color(tema.fg_primary)
                 self.ax.tick_params(colors=tema.fg_primary)
             
             # Ridisegna canvas
-            self.canvas.draw()
+            self.canvas_3d.draw()
             
             print(f"[THEME] Tema applicato: {self.theme_manager.current_theme_name}")
             
