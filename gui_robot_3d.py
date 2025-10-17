@@ -603,9 +603,31 @@ class PythonitaGUI3D:
             # Pulisci canvas precedente
             self._pulisci_canvas_3d()
             
-            # GEOMETRIA → Plot 2D/3D
-            if any(kw in comando_lower for kw in ['cerchio', 'area', 'quadrato', 'triangolo']):
-                print("[VIZ-AI] Riconosciuto: GEOMETRIA")
+            # ANALIZZA IL CODICE PYTHON (non solo il comando!)
+            codice_lower = codice.lower()
+            comando_lower = comando.lower()
+            
+            print(f"[VIZ-AI] Analisi intelligente codice...")
+            
+            # SFERA 3D - formula volume: (4/3)*π*r³
+            if '4/3' in codice and 'pi' in codice_lower and '**3' in codice:
+                print("[VIZ-AI] ✅ Formula sfera rilevata: (4/3)*π*r³")
+                visualizzato = self._plot_sfera_3d(comando, codice, output)
+            
+            # TRIANGOLO - formula area: (base*altezza)/2
+            elif ('/' in codice and '2' in codice and '*' in codice) and \
+                 any(w in comando_lower for w in ['triangolo', 'ipotenusa', 'cateto']):
+                print("[VIZ-AI] ✅ Formula triangolo rilevata: (b*h)/2")
+                visualizzato = self._plot_triangolo_in_canvas(comando, output)
+            
+            # CERCHIO - formula area: π*r²
+            elif 'pi' in codice_lower and '**2' in codice:
+                print("[VIZ-AI] ✅ Formula cerchio rilevata: π*r²")
+                visualizzato = self._plot_geometria_in_canvas(comando, output)
+            
+            # GEOMETRIA GENERICA
+            elif any(kw in comando_lower for kw in ['area', 'quadrato']):
+                print("[VIZ-AI] Riconosciuto: GEOMETRIA GENERICA")
                 visualizzato = self._plot_geometria_in_canvas(comando, output)
             
             # ROBOT → Mano/Braccio 3D
