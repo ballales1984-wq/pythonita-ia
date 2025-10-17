@@ -703,16 +703,16 @@ class PythonitaGUI3D:
         if not raggio:
             raggio = 3  # Default
         
-        # Disegna cerchio
-        import matplotlib.patches as patches
+        # Disegna cerchio con plot() invece di patches
+        theta = np.linspace(0, 2*np.pi, 100)
+        x_circle = raggio * np.cos(theta)
+        y_circle = raggio * np.sin(theta)
         
-        circle = patches.Circle((0, 0), raggio,
-                               fill=True,
-                               facecolor='#00d4ff',
-                               edgecolor='#00ff88',
-                               linewidth=3,
-                               alpha=0.7)
-        self.ax_3d.add_patch(circle)
+        # Cerchio riempito (facecolor)
+        self.ax_3d.fill(x_circle, y_circle, color='#00d4ff', alpha=0.6, label='Area')
+        
+        # Bordo cerchio
+        self.ax_3d.plot(x_circle, y_circle, color='#00ff88', linewidth=3, label='Perimetro')
         
         # Testo area
         area = np.pi * raggio**2
@@ -757,6 +757,65 @@ class PythonitaGUI3D:
         
         print(f"[VIZ-DEBUG] Cerchio disegnato: r={raggio}, area={area:.2f}")
         print(f"[VIZ-DEBUG] Canvas aggiornato e visibile!")
+        return True
+    
+    def _plot_sfera_3d(self, comando: str, codice: str, output: str) -> bool:
+        """Disegna sfera 3D per calcoli di volume/superficie."""
+        print("[VIZ-DEBUG] Disegno sfera 3D...")
+        
+        # Estrai raggio dal comando o codice
+        raggio = self._estrai_numero_da_comando(comando)
+        if not raggio:
+            raggio = 3  # Default
+        
+        # FORZA modalità 3D
+        try:
+            self.ax_3d.clear()
+            self.ax_3d.remove()
+        except:
+            pass
+        
+        self.ax_3d = self.figure_3d.add_subplot(111, projection='3d')
+        self.ax_3d.set_facecolor('#0d1117')
+        self.is_3d_mode = True
+        
+        # Crea sfera 3D
+        u = np.linspace(0, 2 * np.pi, 50)
+        v = np.linspace(0, np.pi, 50)
+        x = raggio * np.outer(np.cos(u), np.sin(v))
+        y = raggio * np.outer(np.sin(u), np.sin(v))
+        z = raggio * np.outer(np.ones(np.size(u)), np.cos(v))
+        
+        # Plot sfera
+        self.ax_3d.plot_surface(x, y, z, color='#00d4ff', alpha=0.7, 
+                               edgecolor='#00ff88', linewidth=0.5)
+        
+        # Calcola volume
+        volume = (4/3) * np.pi * raggio**3
+        
+        # Titolo e labels
+        self.ax_3d.set_title(f'🌐 Sfera - R={raggio}\nVolume={volume:.2f}',
+                            fontsize=14, fontweight='bold', color='#00d4ff', pad=15)
+        self.ax_3d.set_xlabel('X', color='#888888')
+        self.ax_3d.set_ylabel('Y', color='#888888')
+        self.ax_3d.set_zlabel('Z', color='#888888')
+        
+        # Limiti
+        lim = raggio * 1.3
+        self.ax_3d.set_xlim(-lim, lim)
+        self.ax_3d.set_ylim(-lim, lim)
+        self.ax_3d.set_zlim(-lim, lim)
+        
+        # Vista
+        self.ax_3d.view_init(elev=20, azim=45)
+        
+        # FORZA refresh
+        self.canvas_3d.draw()
+        self.canvas_3d.flush_events()
+        self.canvas_3d.get_tk_widget().update_idletasks()
+        self.canvas_3d.get_tk_widget().update()
+        
+        print(f"[VIZ-DEBUG] Sfera 3D disegnata: r={raggio}, volume={volume:.2f}")
         return True
     
     def _plot_robot_in_canvas(self, comando: str) -> bool:
