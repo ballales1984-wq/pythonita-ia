@@ -98,6 +98,10 @@ class PythonitaGUI3D:
         from pythonita.visualization.auto_visualizer import get_auto_visualizer
         self.auto_visualizer = get_auto_visualizer()
         
+        # Agente workflow coordinator
+        from pythonita.core.workflow_agent import get_workflow_agent
+        self.workflow_agent = get_workflow_agent(status_callback=lambda msg: self.status_var.set(msg))
+        
         # Modelli 3D
         self.mano = ManoRobotica()
         self.braccio = BraccioRobotico()
@@ -510,36 +514,91 @@ class PythonitaGUI3D:
         # NON genera automaticamente - utente preme pulsante
     
     def _genera_codice_con_ai(self):
-        """Genera codice con AI quando utente preme il pulsante."""
-        print("[DEBUG] Pulsante AI cliccato!")  # DEBUG
+        """Genera codice con AI coordinato dall'agente."""
+        print("[DEBUG] Pulsante AI cliccato!")
         
         frase = self.input_box.get('1.0', tk.END).strip()
-        print(f"[DEBUG] Frase letta: '{frase}'")  # DEBUG
+        print(f"[DEBUG] Frase letta: '{frase}'")
         
         if not frase:
             messagebox.showwarning("Input vuoto", "Scrivi prima un comando in italiano!")
             return
         
-        # SEMPLIFICATO: Genera DIRETTAMENTE senza threading
-        # (Il threading causava problemi con Tkinter)
-        print("[DEBUG] Inizio generazione DIRETTA...")  # DEBUG
-        self.status_var.set("🤖 AI sta generando codice...")
-        self.root.update()  # Forza update
+        # USA L'AGENTE PER COORDINARE IL WORKFLOW
+        risultato = self.workflow_agent.esegui_workflow(
+            comando=frase,
+            generatore=lambda cmd: self._genera_codice_interno(cmd),
+            esecutore=lambda cod: self._esegui_codice_interno(cod),
+            visualizzatore=lambda cmd, cod, out: self.auto_visualizer.analizza_e_visualizza(cmd, cod, out)
+        )
+        
+        # Mostra risultati
+        if risultato["successo"]:
+            self.status_var.set(f"✅ Workflow completato in {risultato['tempo_totale']:.1f}s")
+            self.error_logger.log_info(f"Workflow OK: {len(risultato['step_completati'])} step")
+        else:
+            self.status_var.set(f"❌ Workflow fallito: {risultato['errori'][0] if risultato['errori'] else 'Unknown'}")
+            if risultato['errori']:
+                self.error_logger.log_error(f"Workflow fallito", Exception(risultato['errori'][0]))
+    
+    def _genera_codice_interno(self, comando: str) -> str:
+        """Genera codice (chiamato dall'agente)."""
+        self._aggiorna_codice()
+        return self.output_box.get('1.0', tk.END).strip()
+    
+    def _esegui_codice_interno(self, codice: str) -> Dict:
+        """Esegue codice e restituisce risultato (chiamato dall'agente)."""
+        import io
+        from contextlib import redirect_stdout, redirect_stderr
+        
+        output_buffer = io.StringIO()
+        error_buffer = io.StringIO()
+        
+        namespace = {
+            '__builtins__': __builtins__,
+            'math': __import__('math'),
+            'numpy': __import__('numpy'),
+        }
         
         try:
-            # Genera codice (può bloccare 2-3s ma almeno funziona)
-            self._aggiorna_codice()
-            print("[DEBUG] Codice generato!")  # DEBUG
-            self.status_var.set(f"✅ Codice generato per: '{frase}'")
+            with redirect_stdout(output_buffer), redirect_stderr(error_buffer):
+                exec(codice, namespace)
             
-            # ESEGUI AUTOMATICAMENTE il codice generato
-            print("[DEBUG] Auto-esecuzione codice...")
-            self._esegui_codice_automatico()
+            output = output_buffer.getvalue()
+            errors = error_buffer.getvalue()
+            
+            # Aggiorna UI risultati
+            self.results_box.config(state="normal")
+            self.results_box.delete('1.0', "end")
+            
+            if output:
+                self.results_box.insert('1.0', f"✅ RISULTATO:\n\n{output}\n")
+            else:
+                self.results_box.insert('1.0', "✅ Codice eseguito.\n\n")
+            
+            if errors:
+                self.results_box.insert("end", f"\n⚠️ WARNING:\n{errors}")
+            
+            self.results_box.config(state="disabled")
+            
+            return {
+                "output": output,
+                "errore": errors if errors else None
+            }
+            
         except Exception as e:
-            print(f"[DEBUG] ERRORE: {e}")  # DEBUG
-            self.error_logger.log_error(f"Errore generazione per '{frase}'", e)
-            messagebox.showerror("Errore", f"Errore generazione: {e}")
-            self.status_var.set("❌ Errore generazione")
+            self.error_logger.log_error("Esecuzione fallita", e)
+            
+            # Mostra errore in results_box
+            self.results_box.config(state="normal")
+            self.results_box.delete('1.0', "end")
+            self.results_box.insert('1.0', f"❌ ERRORE:\n\n{str(e)}\n")
+            self.results_box.config(state="disabled")
+            
+            return {
+                "output": "",
+                "errore": str(e)
+            }
     
     def _esegui_codice_automatico(self):
         """Esegue automaticamente il codice generato e mostra risultati."""
