@@ -670,29 +670,49 @@ class PythonitaGUI3D:
         
         # Disegna cerchio
         import matplotlib.patches as patches
+        
         circle = patches.Circle((0, 0), raggio,
                                fill=True,
                                facecolor='#00d4ff',
                                edgecolor='#00ff88',
                                linewidth=3,
-                               alpha=0.6)
+                               alpha=0.7)
         self.ax_3d.add_patch(circle)
         
         # Testo area
         area = np.pi * raggio**2
-        self.ax_3d.text(0, raggio + 0.5, f'Area = {area:.2f}',
+        self.ax_3d.text(0, raggio + 0.8, f'Area = {area:.2f}',
                        ha='center', va='bottom',
-                       fontsize=14, fontweight='bold',
-                       color='#00ff88')
+                       fontsize=16, fontweight='bold',
+                       color='#00ff88',
+                       bbox=dict(boxstyle='round,pad=0.5', 
+                                facecolor='#1e1e2e', 
+                                edgecolor='#00ff88',
+                                alpha=0.8))
         
-        lim = raggio * 1.5
+        # Aggiungi linea raggio
+        self.ax_3d.plot([0, raggio], [0, 0], 
+                       color='#ff6b6b', linewidth=2.5, 
+                       label=f'R = {raggio}')
+        self.ax_3d.text(raggio/2, -0.3, f'r={raggio}',
+                       ha='center', fontsize=12, color='#ff6b6b')
+        
+        lim = raggio * 1.6
         self.ax_3d.set_xlim(-lim, lim)
         self.ax_3d.set_ylim(-lim, lim)
         self.ax_3d.set_aspect('equal')
-        self.ax_3d.set_title(f'Cerchio - R={raggio}',
-                            fontsize=14, fontweight='bold', color='#00d4ff')
+        self.ax_3d.set_title(f'🔵 Cerchio - Raggio {raggio}',
+                            fontsize=16, fontweight='bold', 
+                            color='#00d4ff', pad=15)
+        self.ax_3d.grid(True, alpha=0.3, color='#3d3d5c', linestyle='--')
+        self.ax_3d.set_xlabel('X', color='#888888')
+        self.ax_3d.set_ylabel('Y', color='#888888')
         
+        # FORZA l'aggiornamento
         self.canvas_3d.draw()
+        self.canvas_3d.flush_events()
+        
+        print(f"[VIZ-DEBUG] Cerchio disegnato: r={raggio}, area={area:.2f}")
         return True
     
     def _plot_robot_in_canvas(self, comando: str) -> bool:
