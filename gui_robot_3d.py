@@ -67,9 +67,25 @@ class PythonitaGUI3D:
     
     def __init__(self, root):
         self.root = root
-        self.root.title("🤖 Pythonita IA v3.4 Pro - AI Code Generator")
-        self.root.geometry("1600x900")  # Più grande e proporzionata
-        self.root.minsize(1200, 700)  # Dimensione minima
+        self.root.title("🤖 Pythonita IA v3.5 Pro - AI Code Generator")
+        
+        # ADATTA AUTOMATICAMENTE ALLO SCHERMO
+        screen_width = root.winfo_screenwidth()
+        screen_height = root.winfo_screenheight()
+        
+        # Usa 85% dello schermo (lascia spazio per taskbar)
+        window_width = int(screen_width * 0.85)
+        window_height = int(screen_height * 0.85)
+        
+        # Posizione centrata
+        x = (screen_width - window_width) // 2
+        y = (screen_height - window_height) // 2
+        
+        self.root.geometry(f"{window_width}x{window_height}+{x}+{y}")
+        self.root.minsize(1000, 600)  # Minimo funzionale
+        
+        print(f"[GUI] Schermo: {screen_width}x{screen_height}")
+        print(f"[GUI] Finestra: {window_width}x{window_height} (85% schermo)")
         
         # Tema colori moderni
         self.colors = {
@@ -457,12 +473,14 @@ class PythonitaGUI3D:
                 bg=self.colors['bg_dark'],
                 fg=self.colors['text_dim']).pack(anchor='w')
         
-        # Canvas matplotlib per 3D
-        self.fig = Figure(figsize=(6, 6), dpi=100)
-        self.ax = self.fig.add_subplot(111, projection='3d')
+        # Canvas matplotlib per 3D (rinominato per consistenza)
+        self.figure_3d = Figure(figsize=(6, 6), dpi=100)
+        self.figure_3d.patch.set_facecolor('#1e1e2e')
+        self.ax_3d = self.figure_3d.add_subplot(111, projection='3d')
+        self.ax_3d.set_facecolor('#0d1117')
         
-        self.canvas = FigureCanvasTkAgg(self.fig, master=frame)
-        self.canvas.draw()
+        self.canvas_3d = FigureCanvasTkAgg(self.figure_3d, master=frame)
+        self.canvas_3d.draw()
         self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True, pady=5)
         
         # Disegna mano iniziale
