@@ -201,16 +201,18 @@ JSON:"""
                         messages=[{"role": "user", "content": prompt}],
                     )
                 except:
-                    risposta = ollama.chat(
-                        model="deepseek-coder:latest",
-                        messages=[{"role": "user", "content": prompt}],
-                    )
+                    try:
+                        risposta = ollama.chat(
+                            model="deepseek-coder:latest",
+                            messages=[{"role": "user", "content": prompt}],
+                        )
+                    except:
+                        risposta = ollama.chat(
+                            model="qwen2.5-coder:7b",
+                            messages=[{"role": "user", "content": prompt}],
+                        )
 
-                content = (
-                    risposta["message"]["content"]
-                    .encode("utf-8", errors="replace")
-                    .decode("utf-8")
-                )
+                content = risposta["message"]["content"]
 
                 if "[" in content and "]" in content:
                     json_str = content[content.find("[") : content.rfind("]") + 1]
@@ -465,13 +467,7 @@ class SelfImprovingAgent:
         )
 
     def _check_llm(self) -> bool:
-        try:
-            import ollama
-
-            ollama.list()
-            return True
-        except:
-            return False
+        return False  # Disable LLM for now - use fallback
 
     def _load_state(self) -> AgentState:
         state = AgentState()
