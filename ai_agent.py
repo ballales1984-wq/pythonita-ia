@@ -1,6 +1,6 @@
 """
-AI Agent v5 - RAG Advanced (2026 Edition)
-Safe + Vector Memory + Hybrid Search + Context Optimization
+AI Agent v6 - Multi-Agent System
+Collaborazione tra agent specializzati: Didattico, Robotica, Codice
 """
 
 import json
@@ -12,18 +12,16 @@ import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Optional, List, Dict
+from enum import Enum
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-MEMORY_FILE = "agent_memory_rag.json"
-VECTOR_DB_PATH = "./vector_memory_pythonita"
+MEMORY_FILE = "agent_memory_multi.json"
+VECTOR_DB_PATH = "./vector_memory_multi"
 SAFE_WORKSPACE = "workspace_agent"
 MAX_STEPS = 5
-MAX_MEMORY_SIZE = 500
-SIMILARITY_THRESHOLD = 0.68
-
-ALLOWED_TOOLS = ["crea_file", "esegui_codice", "calcola", "memoria", "rispondi"]
+SIMILARITY_THRESHOLD = 0.65
 
 SAFE_GLOBALS = {
     "__builtins__": {
@@ -50,492 +48,403 @@ SAFE_GLOBALS = {
 }
 
 
-class VectorMemoryRAG:
-    """Vector Memory RAG Avanzato con metadata filtering e similarity threshold."""
-
-    def __init__(self, persist_path: str = VECTOR_DB_PATH):
-        self.client = None
-        self.collection = None
-        self.embedding_fn = None
-        self._init_rag(persist_path)
-
-    def _init_rag(self, persist_path: str):
-        try:
-            import chromadb
-            from chromadb.utils import embedding_functions
-
-            Path(persist_path).mkdir(exist_ok=True)
-            self.client = chromadb.PersistentClient(path=persist_path)
-            self.embedding_fn = (
-                embedding_functions.SentenceTransformerEmbeddingFunction(
-                    model_name="all-MiniLM-L6-v2"
-                )
-            )
-            self.collection = self.client.get_or_create_collection(
-                name="pythonita_rag_memory",
-                embedding_function=self.embedding_fn,
-                metadata={"hnsw:space": "cosine"},
-            )
-            logger.info("✅ RAG Vector Memory attivata (MiniLM-L6-v2)")
-        except ImportError:
-            logger.warning(
-                "⚠️ Chroma non installato. pip install chromadb sentence-transformers"
-            )
-            self.client = None
-        except Exception as e:
-            logger.warning(f"⚠️ RAG non disponibile: {e}")
-            self.client = None
-
-    def add(self, text: str, metadata: Dict = None, doc_id: str = None) -> bool:
-        """Aggiunge documento con metadata ricchi."""
-        if not self.client or not self.collection:
-            return False
-
-        if not metadata:
-            metadata = {}
-
-        metadata.update(
-            {
-                "timestamp": datetime.now().isoformat(),
-                "tipo": metadata.get("tipo", "conversazione"),
-                "fonte": metadata.get("fonte", "utente"),
-            }
-        )
-
-        if not doc_id:
-            doc_id = f"rag_{int(datetime.now().timestamp() * 1000)}"
-
-        try:
-            self.collection.add(
-                documents=[text[:1000]], metadatas=[metadata], ids=[doc_id]
-            )
-            logger.info(f"📥 RAG added → {metadata.get('tipo')} | {text[:50]}...")
-            return True
-        except Exception as e:
-            logger.error(f"Errore RAG add: {e}")
-            return False
-
-    def search(
-        self,
-        query: str,
-        k: int = 6,
-        similarity_threshold: float = SIMILARITY_THRESHOLD,
-        tipo_filter: List[str] = None,
-    ) -> List[Dict]:
-        """Ricerca RAG con filtri."""
-        if not self.client or not self.collection:
-            return []
-
-        try:
-            where = None
-            if tipo_filter:
-                where = {"tipo": {"$in": tipo_filter}}
-
-            query_params = {
-                "query_texts": [query],
-                "n_results": k,
-                "include": ["documents", "metadatas", "distances"],
-            }
-            if where:
-                query_params["where"] = where
-
-            results = self.collection.query(**query_params)
-
-            if not results["documents"] or not results["documents"][0]:
-                return []
-
-            formatted = []
-            for doc, meta, dist in zip(
-                results["documents"][0],
-                results["metadatas"][0],
-                results["distances"][0],
-            ):
-                similarity = 1 - dist
-                if similarity < similarity_threshold:
-                    continue
-
-                formatted.append(
-                    {
-                        "text": doc,
-                        "metadata": meta,
-                        "similarity": round(similarity, 3),
-                        "tipo": meta.get("tipo", "sconosciuto"),
-                    }
-                )
-
-            return formatted
-        except Exception as e:
-            logger.error(f"Errore RAG search: {e}")
-            return []
-
-    def get_context_for_prompt(self, query: str, max_results: int = 5) -> str:
-        """Restituisce contesto formattato per il prompt LLM."""
-        results = self.search(
-            query=query,
-            k=8,
-            similarity_threshold=0.65,
-            tipo_filter=["lezione", "codice", "robotica", "esercizio", "conversazione"],
-        )
-
-        if not results:
-            return ""
-
-        context = "\n\n📚 CONTENUTO RECUPERATO DALLA MEMORIA (RAG):\n"
-        for i, res in enumerate(results[:max_results], 1):
-            context += f"\n{i}. [{res['tipo'].upper()}] (sim: {res['similarity']}) {res['text']}\n"
-
-        return context + "\n(USA QUESTE INFORMAZIONI PER RISPOSTE PRECISE)"
-
-    def get_by_tipo(self, tipo: str, k: int = 10) -> List[Dict]:
-        """Recupera documenti per tipo specifico."""
-        return self.search(query="", k=k, tipo_filter=[tipo])
+class AgentType(Enum):
+    DIDATTICO = "didattico"
+    ROBOTICA = "robotica"
+    CODICE = "codice"
+    GENERALE = "generale"
 
 
-def safe_create_workspace():
-    Path(SAFE_WORKSPACE).mkdir(exist_ok=True)
+class BaseAgent:
+    """Base class per tutti gli agent."""
 
-
-def load_structured_memory() -> dict:
-    if not os.path.exists(MEMORY_FILE):
-        return {"history": [], "stato": {}, "conoscenze": {}, "version": "v5_rag"}
-    try:
-        with open(MEMORY_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except:
-        return {"history": [], "stato": {}, "conoscenze": {}, "version": "v5_rag"}
-
-
-def save_structured_memory(memory: dict):
-    with open(MEMORY_FILE, "w", encoding="utf-8") as f:
-        json.dump(memory, f, indent=2, ensure_ascii=False)
-
-
-def safe_add_to_memory(
-    memory: dict,
-    ruolo: str,
-    contenuto: str,
-    azione: str = None,
-    tipo: str = "conversazione",
-):
-    if len(str(contenuto)) > MAX_MEMORY_SIZE:
-        contenuto = str(contenuto)[:MAX_MEMORY_SIZE]
-
-    entry = {
-        "ruolo": ruolo,
-        "contenuto": contenuto,
-        "timestamp": datetime.now().isoformat(),
-        "tipo": tipo,
-    }
-    if azione:
-        entry["azione"] = azione
-
-    memory["history"].append(entry)
-    if len(memory["history"]) > 100:
-        memory["history"] = memory["history"][-50:]
-
-    save_structured_memory(memory)
-    return memory
-
-
-def memorizza(memory: dict, chiave: str, valore: Any):
-    if len(str(valore)) > MAX_MEMORY_SIZE:
-        valore = str(valore)[:MAX_MEMORY_SIZE]
-    memory["conoscenze"][chiave] = {
-        "valore": valore,
-        "timestamp": datetime.now().isoformat(),
-    }
-    save_structured_memory(memory)
-
-
-def recupera(memory: dict, chiave: str) -> Optional[Any]:
-    if chiave in memory["conoscenze"]:
-        return memory["conoscenze"][chiave]["valore"]
-    return None
-
-
-class SafeTool:
-    def __init__(self, name: str, description: str):
+    def __init__(self, agent_type: AgentType, name: str, description: str):
+        self.type = agent_type
         self.name = name
         self.description = description
 
-    def execute(self, memory: dict, **kwargs) -> str:
+    def can_handle(self, query: str) -> float:
+        """Ritorna 0-1 score di quanto l'agent può gestire la query."""
+        return 0.0
+
+    def process(self, query: str, context: dict) -> dict:
+        """Processa la query e ritorna risultato."""
         raise NotImplementedError
 
 
-class SafeFileTool(SafeTool):
+class DidatticoAgent(BaseAgent):
+    """Agent specializzato in didattica Python."""
+
     def __init__(self):
-        super().__init__("crea_file", "Crea file nella workspace sicura")
+        super().__init__(
+            AgentType.DIDATTICO, "Didattico", "Spiegazioni Python, lezioni, esercizi"
+        )
 
-    def execute(self, memory: dict, percorso: str, contenuto: str) -> str:
-        if ".." in percorso or percorso.startswith("/") or ":" in percorso:
-            return "❌ Percorso non consentito"
+    def can_handle(self, query: str) -> float:
+        text = query.lower()
+        keywords = [
+            "spiega",
+            "lezione",
+            "come funziona",
+            "cos'è",
+            "esempio",
+            "esercizio",
+            "impara",
+            "studente",
+            "teoria",
+            "concetto",
+            "for",
+            "while",
+            "if",
+            "list",
+            "dizionario",
+            "funzione",
+            "classe",
+            "python",
+        ]
+        score = sum(1 for k in keywords if k in text)
+        return min(score / 3, 1.0)
 
-        safe_create_workspace()
-        safe_path = os.path.join(SAFE_WORKSPACE, os.path.basename(percorso))
+    def process(self, query: str, context: dict) -> dict:
+        prompt = f"""Sei un insegnante di Python paziente e chiaro.
+Spiega il concetto in modo semplice con esempi pratici.
 
-        try:
-            with open(safe_path, "w", encoding="utf-8") as f:
-                f.write(contenuto[:10000])
-            return f"✅ File: {safe_path}"
-        except Exception as e:
-            return f"❌ Errore: {e}"
+DOMANDA: {query}
 
+Rispondi in italiano in modo didattico."""
 
-class SafePythonTool(SafeTool):
-    def __init__(self):
-        super().__init__("esegui_codice", "Esegua Python in sandbox")
-
-    def execute(self, memory: dict, codice: str, **kwargs) -> str:
-        if len(codice) > 2000:
-            return "❌ Codice troppo lungo"
-
-        if any(
-            d in codice.lower()
-            for d in ["import os", "import sys", "import subprocess", "__import__"]
-        ):
-            return "❌ Import non consentiti"
-
-        old_stdout = sys.stdout
-        sys.stdout = captured = io.StringIO()
-
-        try:
-            result = {}
-            exec(codice, SAFE_GLOBALS, result)
-            sys.stdout = old_stdout
-            output = captured.getvalue() or str(result)[:1000] or "✅ Eseguito"
-            return f"✅ {output}"
-        except Exception as e:
-            sys.stdout = old_stdout
-            return f"❌ Errore: {e}"
-
-
-class SafeCalculatorTool(SafeTool):
-    def __init__(self):
-        super().__init__("calcola", "Calcoli matematici")
-
-    def execute(self, memory: dict, espressione: str, **kwargs) -> str:
-        allowed = set("0123456789+-*/.() ")
-        if not all(c in allowed for c in espressione):
-            return "❌ Espressione non valida"
-        try:
-            result = eval(espressione)
-            return f"✅ {espressione} = {result}"
-        except:
-            return f"❌ Errore calcolo"
-
-
-class SafeMemoryTool(SafeTool):
-    def __init__(self):
-        super().__init__("memoria", "Memoria strutturata + RAG")
-
-    def execute(
-        self,
-        memory: dict,
-        azione: str = None,
-        chiave: str = None,
-        valore: str = None,
-        cerca: str = None,
-        vector_memory: VectorMemoryRAG = None,
-    ) -> str:
-        if azione == "salva" and chiave and valore:
-            memorizza(memory, chiave, valore[:500])
-            if vector_memory:
-                vector_memory.add(
-                    f"{chiave}: {valore}",
-                    {"tipo": "conoscenza", "chiave": chiave, "fonte": "utente"},
-                )
-            return f"🧠 Memorizzato: {chiave}"
-
-        if azione == "leggi" and chiave:
-            result = recupera(memory, chiave)
-            if result:
-                return f"🧠 {chiave}: {result}"
-            return f"🧠 Nessun dato: {chiave}"
-
-        if azione == "cerca" and cerca and vector_memory:
-            results = vector_memory.search(cerca, k=5)
-            if results:
-                return "🧠 Risultati RAG:\n" + "\n".join(
-                    [
-                        f"- [{r['tipo']}] sim:{r['similarity']} → {r['text'][:80]}..."
-                        for r in results
-                    ]
-                )
-            return "🧠 Nessun risultato"
-
-        if azione == "lezioni" and vector_memory:
-            results = vector_memory.get_by_tipo("lezione", k=5)
-            if results:
-                return "📚 Lezioni passate:\n" + "\n".join(
-                    [f"- {r['text'][:100]}" for r in results]
-                )
-            return "📚 Nessuna lezione trovata"
-
-        if azione == "stato":
-            return f"🧠 Storia: {len(memory['history'])}, Conoscenze: {len(memory['conoscenze'])}"
-
-        return "🧠 Usa: memoria(salva|lezgi|cerca|lezioni|stato)"
-
-
-class SafeRouter:
-    def __init__(self, vector_memory: VectorMemoryRAG = None):
-        self.vector_memory = vector_memory
-        self.tools = {
-            "crea_file": SafeFileTool(),
-            "esegui_codice": SafePythonTool(),
-            "calcola": SafeCalculatorTool(),
-            "memoria": SafeMemoryTool(),
+        return {
+            "tipo": "didattico",
+            "risposta": self._call_llm(prompt),
+            "azione": "rispondi",
         }
-        self.execution_count = 0
 
-    def route(self, action: str, params: dict, memory: dict) -> str:
-        if self.execution_count >= MAX_STEPS:
-            return "❌ Limite raggiunto"
-
-        if action not in ALLOWED_TOOLS:
-            return f"❌ Tool non permesso: {action}"
-
-        if action == "rispondi":
-            return params.get("testo", "Come posso aiutarti?")
-
-        if action in self.tools:
-            self.execution_count += 1
-            params["vector_memory"] = self.vector_memory
-            return self.tools[action].execute(memory, **params)
-
-        return f"❌ Azione sconosciuta: {action}"
-
-    def reset(self):
-        self.execution_count = 0
-
-
-class Agent:
-    """AI Agent con RAG avanzato (2026)."""
-
-    def __init__(self):
-        self.structured_memory = load_structured_memory()
-        self.vector_memory = VectorMemoryRAG()
-        self.router = SafeRouter(self.vector_memory)
-        self.llm = None
-        self._init_llm()
-
-        logger.info(
-            f"✅ Agent v5 RAG. Storia: {len(self.structured_memory['history'])}"
-        )
-
-    def _init_llm(self):
-        try:
-            import ollama
-
-            ollama.list()
-            self.llm = "ollama"
-            logger.info("✅ LLM connesso")
-        except:
-            self.llm = None
-
-    def plan_action(self, input_text: str) -> dict:
-        # RAG context per prompt
-        contesto_rag = self.vector_memory.get_context_for_prompt(input_text)
-
-        # Storia recente
-        recent = (
-            self.structured_memory["history"][-3:]
-            if self.structured_memory["history"]
-            else []
-        )
-        contesto_stru = "\n".join([f"{c['ruolo']}: {c['contenuto']}" for c in recent])
-
-        prompt = f"""Sei Pythonita IA, assistente didattico italiano.
-{contesto_rag}
-
-Storia recente:
-{contesto_stru}
-
-Richiesta: "{input_text}"
-
-Azioni: rispondi, calcola, esegui_codice, crea_file, memoria(salva|leggi|cerca|lezioni|stato)
-
-Rispondi SOLO JSON:
-{{"azione": "...", "parametri": {{...}}}}
-
-JSON:"""
-
-        if self.llm:
-            return self._plan_with_llm(prompt)
-        return self._plan_fallback(input_text)
-
-    def _plan_with_llm(self, prompt: str) -> dict:
+    def _call_llm(self, prompt: str) -> str:
         try:
             import ollama
 
             risposta = ollama.chat(
                 model="llama3.2", messages=[{"role": "user", "content": prompt}]
             )
-            content = risposta["message"]["content"].strip()
-            if "{" in content:
-                json_str = content[content.find("{") : content.rfind("}") + 1]
-                return json.loads(json_str)
-        except Exception as e:
-            logger.error(f"LLM: {e}")
+            return risposta["message"]["content"].strip()
+        except:
+            return "Spiegazione non disponibile (LLM non connesso)"
 
-        return {"azione": "rispondi", "parametri": {}}
 
-    def _plan_fallback(self, input_text: str) -> dict:
-        text = input_text.lower()
+class RoboticaAgent(BaseAgent):
+    """Agent specializzato in robotica e visualizzazione 3D."""
 
-        if any(x in text for x in ["calcola", "quanto fa"]) and re.search(r"\d+", text):
-            expr = re.sub(r"[^\d+\-*/().]", "", text)
-            return {"azione": "calcola", "parametri": {"espressione": expr}}
+    def __init__(self):
+        super().__init__(
+            AgentType.ROBOTICA,
+            "Robotica",
+            "Robot 3D, Arduino, mani bioniche, animazioni",
+        )
 
-        if any(x in text for x in ["salva", "ricorda", "memorizza"]):
+    def can_handle(self, query: str) -> float:
+        text = query.lower()
+        keywords = [
+            "robot",
+            "mano",
+            "braccio",
+            "apri",
+            "chiudi",
+            "pugno",
+            "dita",
+            "arduino",
+            "3d",
+            "animazione",
+            "motore",
+            "servo",
+            "afferra",
+            "solleva",
+            "muovi",
+            "visualizzatore",
+            "gripper",
+        ]
+        score = sum(1 for k in keywords if k in text)
+        return min(score / 3, 1.0)
+
+    def process(self, query: str, context: dict) -> dict:
+        prompt = f"""Sei un esperto di robotica e automazione.
+Genera codice Python per robotica e animazioni 3D.
+
+ Richiesta: {query}
+
+Se è richiesta un'animazione, genera codice Matplotlib/Visualization.
+Se è per Arduino, genera codice C++."""
+
+        return {
+            "tipo": "robotica",
+            "risposta": self._call_llm(prompt),
+            "azione": "rispondi",
+        }
+
+    def _call_llm(self, prompt: str) -> str:
+        try:
+            import ollama
+
+            risposta = ollama.chat(
+                model="llama3.2", messages=[{"role": "user", "content": prompt}]
+            )
+            return risposta["message"]["content"].strip()
+        except:
+            return "Codice robotica non disponibile"
+
+
+class CodiceAgent(BaseAgent):
+    """Agent specializzato in generazione codice Python."""
+
+    def __init__(self):
+        super().__init__(
+            AgentType.CODICE, "Codice", "Generazione codice, debugging, ottimizzazione"
+        )
+
+    def can_handle(self, query: str) -> float:
+        text = query.lower()
+        keywords = [
+            "codice",
+            "programma",
+            "script",
+            "crea",
+            "genera",
+            "scrivi",
+            "funzione",
+            "classe",
+            "loop",
+            "debug",
+            "errore",
+            "ottimizza",
+            "python",
+            "file",
+            "salva",
+            "esegui",
+        ]
+        score = sum(1 for k in keywords if k in text)
+        return min(score / 3, 1.0)
+
+    def process(self, query: str, context: dict) -> dict:
+        prompt = f"""Genera SOLO codice Python pulito e funzionante per:
+{query}
+
+Regole:
+- Solo codice, nessuna spiegazione
+- Codice sicuro e idiomatico
+- Se richiede file, usa la workspace './workspace_agent/'"""
+
+        codice = self._call_llm(prompt)
+
+        if "crea_file" in query.lower() or "salva" in query.lower():
             return {
-                "azione": "memoria",
-                "parametri": {
-                    "azione": "salva",
-                    "chiave": "info",
-                    "valore": input_text,
-                },
+                "tipo": "codice",
+                "risposta": codice,
+                "azione": "crea_file",
+                "percorso": "output.py",
+                "contenuto": codice,
             }
 
-        if "cerca" in text:
+        return {
+            "tipo": "codice",
+            "risposta": codice,
+            "azione": "esegui_codice",
+            "codice": codice,
+        }
+
+    def _call_llm(self, prompt: str) -> str:
+        try:
+            import ollama
+
+            risposta = ollama.chat(
+                model="llama3.2", messages=[{"role": "user", "content": prompt}]
+            )
+            return risposta["message"]["content"].strip()
+        except:
+            return "# LLM non disponibile"
+
+
+class MultiAgentOrchestrator:
+    """Orchestratore multi-agent che coordina tutti gli agent."""
+
+    def __init__(self):
+        self.agents: List[BaseAgent] = [
+            DidatticoAgent(),
+            RoboticaAgent(),
+            CodiceAgent(),
+        ]
+        self.memory = self._load_memory()
+        self.vector_db = self._init_vector_db()
+        self.llm_available = self._check_llm()
+
+        logger.info(
+            f"✅ Multi-Agent Orchestrator attivato con {len(self.agents)} agent"
+        )
+
+    def _load_memory(self) -> dict:
+        if os.path.exists(MEMORY_FILE):
+            try:
+                with open(MEMORY_FILE, "r") as f:
+                    return json.load(f)
+            except:
+                pass
+        return {"history": [], "conoscenze": {}}
+
+    def _init_vector_db(self):
+        try:
+            import chromadb
+            from chromadb.utils import embedding_functions
+
+            Path(VECTOR_DB_PATH).mkdir(exist_ok=True)
+            client = chromadb.PersistentClient(path=VECTOR_DB_PATH)
+            embedding_fn = embedding_functions.SentenceTransformerEmbeddingFunction(
+                model_name="all-MiniLM-L6-v2"
+            )
+            collection = client.get_or_create_collection(
+                name="multi_agent_memory", embedding_function=embedding_fn
+            )
+            logger.info("✅ Vector DB attivo")
             return {
-                "azione": "memoria",
-                "parametri": {"azione": "cerca", "cerca": input_text},
+                "client": client,
+                "collection": collection,
+                "embedding_fn": embedding_fn,
             }
+        except:
+            logger.warning("⚠️ Vector DB non disponibile")
+            return None
 
-        return {"azione": "rispondi", "parametri": {}}
+    def _check_llm(self) -> bool:
+        try:
+            import ollama
 
-    def run(self, input_text: str) -> str:
-        self.vector_memory.add(
-            input_text, {"ruolo": "utente", "tipo": "conversazione", "fonte": "utente"}
-        )
+            ollama.list()
+            return True
+        except:
+            return False
 
-        piano = self.plan_action(input_text)
-        risultato = self.router.route(
-            piano.get("azione"), piano.get("parametri", {}), self.structured_memory
-        )
+    def select_agent(self, query: str) -> tuple[BaseAgent, float]:
+        """Seleziona l'agent migliore per la query."""
+        best_agent = None
+        best_score = 0.0
 
-        safe_add_to_memory(
-            self.structured_memory, "utente", input_text, tipo="conversazione"
-        )
-        safe_add_to_memory(
-            self.structured_memory, "agent", str(risultato)[:100], tipo="risposta"
-        )
-        self.vector_memory.add(
-            risultato, {"ruolo": "agent", "tipo": "risposta", "fonte": "agent"}
-        )
+        for agent in self.agents:
+            score = agent.can_handle(query)
+            if score > best_score:
+                best_score = score
+                best_agent = agent
 
-        self.router.reset()
-        return risultato
+        if best_score < 0.3:
+            return self.agents[2], 0.5  # Default a codice
+
+        return best_agent, best_score
+
+    def get_context(self, query: str) -> str:
+        if not self.vector_db:
+            return ""
+
+        try:
+            results = self.vector_db["collection"].query(
+                query_texts=[query], n_results=3, include=["documents", "metadatas"]
+            )
+            if results["documents"] and results["documents"][0]:
+                ctx = "\n📚 Contesto:\n"
+                for doc in results["documents"][0]:
+                    ctx += f"- {doc[:100]}...\n"
+                return ctx
+        except:
+            pass
+        return ""
+
+    def process(self, query: str) -> dict:
+        agent, score = self.select_agent(query)
+        logger.info(f"🎯 Agent selezionato: {agent.name} (score: {score:.2f})")
+
+        context = self.get_context(query)
+        context_dict = {
+            "context": context,
+            "history": self.memory.get("history", [])[-3:],
+        }
+
+        result = agent.process(query, context_dict)
+
+        self._save_interaction(query, result)
+
+        return result
+
+    def _save_interaction(self, query: str, result: dict):
+        self.memory["history"].append(
+            {
+                "query": query[:200],
+                "agent": result.get("tipo", "sconosciuto"),
+                "timestamp": datetime.now().isoformat(),
+            }
+        )
+        if len(self.memory["history"]) > 50:
+            self.memory["history"] = self.memory["history"][-25:]
+
+        with open(MEMORY_FILE, "w") as f:
+            json.dump(self.memory, f, indent=2)
+
+        if self.vector_db and result.get("risposta"):
+            try:
+                self.vector_db["collection"].add(
+                    documents=[result["risposta"][:500]],
+                    metadatas=[
+                        {"agent": result.get("tipo", "generic"), "query": query[:100]}
+                    ],
+                    ids=[f"mem_{int(datetime.now().timestamp() * 1000)}"],
+                )
+            except:
+                pass
+
+
+class Router:
+    """Router per eseguire le azioni degli agent."""
+
+    def __init__(self):
+        Path(SAFE_WORKSPACE).mkdir(exist_ok=True)
+
+    def execute(self, azione: str, params: dict) -> str:
+        if azione == "rispondi":
+            return params.get("risposta", "Come posso aiutarti?")
+
+        if azione == "esegui_codice":
+            codice = params.get("codice", "")
+            if len(codice) > 2000:
+                return "❌ Codice troppo lungo"
+            if any(
+                d in codice.lower() for d in ["import os", "import sys", "subprocess"]
+            ):
+                return "❌ Import non consentiti"
+
+            old_stdout = sys.stdout
+            sys.stdout = captured = io.StringIO()
+            try:
+                exec(codice, SAFE_GLOBALS, {})
+                sys.stdout = old_stdout
+                return f"✅ {captured.getvalue() or 'Eseguito'}"
+            except Exception as e:
+                sys.stdout = old_stdout
+                return f"❌ {e}"
+
+        if azione == "crea_file":
+            percorso = params.get("percorso", "output.py")
+            percorso = os.path.join(SAFE_WORKSPACE, os.path.basename(percorso))
+            try:
+                with open(percorso, "w") as f:
+                    f.write(params.get("contenuto", "")[:10000])
+                return f"✅ File creato: {percorso}"
+            except Exception as e:
+                return f"❌ {e}"
+
+        return f"❌ Azione sconosciuta: {azione}"
 
 
 def main():
-    safe_create_workspace()
-    agent = Agent()
+    orchestrator = MultiAgentOrchestrator()
+    router = Router()
 
-    print("\n🤖 Pythonita IA - RAG Advanced v5")
-    print("Dipendenze: pip install chromadb sentence-transformers")
-    print("Comandi: 'esci' per uscire, 'stato' per info\n")
+    print("\n🤖 Multi-Agent System v6")
+    print("Agent: Didattico | Robotica | Codice")
+    print("Digita 'esci' per uscire, 'stato' per info\n")
 
     while True:
         user_input = input("➤ ").strip()
@@ -545,14 +454,18 @@ def main():
             break
 
         if user_input.lower() == "stato":
-            print(f"📊 Memoria: {len(agent.structured_memory['history'])} eventi")
+            print(f"📊 Interazioni: {len(orchestrator.memory['history'])}")
+            print(
+                "Agent disponibili:", ", ".join([a.name for a in orchestrator.agents])
+            )
             continue
 
         if not user_input:
             continue
 
-        result = agent.run(user_input)
-        print(f"\n{result}\n")
+        result = orchestrator.process(user_input)
+        output = router.execute(result.get("azione", "rispondi"), result)
+        print(f"\n🎯 [{result.get('tipo', '?')}] {output}\n")
 
 
 if __name__ == "__main__":
