@@ -17,10 +17,64 @@ Genera codice Python da frasi in linguaggio naturale italiano.
 - 🔗 **Multi-Comando** - Combina più azioni in un unico programma! (v2.3+)
 - 🗣️ **Linguaggio Naturale Avanzato** - Analisi SVC e interrogativi (v3.0+)
 - 🤖 **Template Robotica** - Genera codice per robot e mani bioniche (v3.0+)
-- 🎨 **NUOVO! Visualizzatore 3D** - Vedi i comandi animati in 3D con misure reali! (v3.1+)
-- 🍎 **NUOVO! Oggetti 3D** - Afferra mela, palla, cubo con grafica realistica! (v3.1+)
+- 🎨 **Visualizzatore 3D** - Vedi i comandi animati in 3D con misure reali! (v3.1+)
+- 🍎 **Oggetti 3D** - Afferra mela, palla, cubo con grafica realistica! (v3.1+)
+- 🧠 **AI Agent v7** - Self-Improving Agent con Planner, Executor, Critic, Reflection, Memory (v7+)
 
-## 🎨 NOVITÀ v3.1: Visualizzatore 3D Robot
+## 🧠 NOVITÀ v7: AI Agent Self-Improving
+
+**Il cuore intelligente del sistema** - Un agent AI che pensa, esegue, valuta e migliora!
+
+```python
+python ai_agent.py
+```
+
+### Architettura
+
+```
+INPUT → PLANNER → EXECUTOR → CRITIC → REFLECTION → MEMORY
+```
+
+### Componenti
+
+| Componente | Funzione |
+|------------|----------|
+| **Planner** | Genera piano azioni da input |
+| **Executor** | Esegue tool in sandbox sicuro |
+| **Critic** | Valuta risultati (score 0-1) |
+| **Reflection** | Auto-migliora strategy_level |
+| **Memory** | Vector DB (Chroma) per memoria semantica |
+
+### Tool Disponibili
+
+- `calcola` - Operazioni matematiche
+- `crea_file` - Scrive file in workspace
+- `esegui_codice` - Esegue Python in sandbox
+- `rispondi` - Risposte testuali
+
+### Esempi
+
+```bash
+➤ calcola 100*2
+  Output: OK 100*2 = 200
+
+➤ salva hello in test.txt
+  Output: OK File: workspace/test.txt
+```
+
+### Self-Improving
+
+L'agente impara dalle sue performance:
+- Fallimenti → strategy_level +1 (più attento)
+- Successi frequenti → strategy_level -1 (più veloce)
+
+### Dipendenze
+
+```bash
+pip install chromadb sentence-transformers ollama
+```
+
+**Documentazione**: [AI_AGENT_V7.md](AI_AGENT_V7.md)
 
 **Vedi i tuoi comandi robot prendere vita in 3D!**
 
@@ -158,24 +212,27 @@ for i in range(1, 11):
 ## 📁 Struttura del Progetto
 
 ```
-pythonita/
-├── core/                      # Moduli principali
+pythonita-ia/
+├── ai_agent.py                   # AI Agent v7 (Self-Improving)
+├── pythonita_framework/          # Framework modulare AI Agent
 │   ├── __init__.py
-│   ├── parser.py             # Parser NLP unificato
-│   └── generatore.py         # Generatore ibrido (AI + regole)
-├── data/                      # Dati e configurazioni
-│   ├── funzioni_salvate/     # Funzioni generate salvate
-├── librerie/                  # [DEPRECATO] Vecchi moduli
-├── linguaggio/                # [DEPRECATO] Vecchi moduli
-├── main.py                    # Entry point CLI
-├── gui_pythonita.py          # Entry point GUI
-├── controllore.py            # Controllore principale
-├── config.py                 # Configurazione centralizzata
-├── interprete_ai.py          # Modelli di machine learning
-├── requirements.txt          # Dipendenze Python
-├── frasi.csv                 # Dataset di training
-├── sinonimi.json             # Sinonimi per matching
-└── output.py                 # Output del codice generato
+│   ├── orchestrator.py          # Multi-agent orchestrator
+│   ├── agent.py                 # Agent base classes
+│   ├── tools.py                 # Safe tool system
+│   ├── memory.py                # Vector + structured memory
+│   └── setup.py
+├── pythonita/                    # Package principale
+│   ├── core/                    # Parser, generatore, validatore
+│   ├── visualization/            # Visualizzatore 3D, robot
+│   ├── hardware/                # Arduino, CircuitPython
+│   ├── gui/                     # Interfacce utente
+│   ├── plugins/                 # Plugin system
+│   └── utils/                   # Cache, config, export
+├── tests/                        # 112 test automatici
+├── examples/                     # Esempi d'uso
+├── traduttore_semantico.py      # Parser NLP italiano
+├── sinonimi.json                # Mappa comandi
+└── requirements.txt              # Dipendenze
 ```
 
 ## 🏗️ Architettura
@@ -368,7 +425,57 @@ Vedi [LICENSE](LICENSE) per termini completi.
 - GitHub Issues (solo bug, no supporto)
 - Forum: https://pythonita.com/forum
 
+## 🧠 AI Agent v7 - Guida Rapida
+
+### Installazione
+
+```bash
+pip install -r requirements.txt
+pip install chromadb sentence-transformers ollama
+```
+
+### Uso
+
+```python
+from ai_agent import SelfImprovingAgent
+
+agent = SelfImprovingAgent()
+result = agent.run("calcola 10+5")
+print(result['output'])
+```
+
+### Test
+
+```bash
+python ai_agent.py
+```
+
+### Componenti Core
+
+```python
+# Planner - genera piano azioni
+plan = planner.plan(input, state, context)
+
+# Executor - esegue in sandbox
+output, success = executor.execute(step, memory)
+
+# Critic - valuta risultati
+critique = critic.critique(outputs, plan)
+
+# Reflection - auto-migliora
+state = reflection.reflect(state, critique, outputs)
+```
+
+### File Importanti
+
+| File | Descrizione |
+|------|-------------|
+| `ai_agent.py` | Self-Improving Agent principale |
+| `traduttore_semantico.py` | Parser NLP italiano |
+| `sinonimi.json` | Mappa comandi italiani |
+| `pythonita_framework/` | Framework modulare |
+
 ---
 
-**Pythonita IA v3.1** - Il Tuo Codice Prende Vita! 🎨🤖💰
+**Pythonita IA v7** - AI Agent + Didattica + Robotica 3D! 🤖💻
 
