@@ -1,0 +1,12 @@
+{
+  "stampa": ["mostra", "visualizza", "scrivi", "print"],
+  "somma": ["aggiungi", "calcola", "somma", "piu"],
+  "lista": ["array", "insieme", "sequenza", "list"],
+  "tensorflow": ["rete neurale", "modello", "deep learning"],
+  "nlp": ["testo", "analizza", "linguaggio"],
+  "calcola": ["quanto fa", "calcola", "conta"],
+  "salva": ["salva", "crea file", "scrivi su"],
+  "esegui": ["esegui", "run", "avvia"],
+  "ricorda": ["ricorda", "memorizza", "salva in memoria"],
+  "cerca": ["cerca", "trova", "ricerca"]
+}
