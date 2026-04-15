@@ -1,6 +1,7 @@
 """
-AI Agent v6 - Multi-Agent System
-Collaborazione tra agent specializzati: Didattico, Robotica, Codice
+AI Agent v7 - Self-Improving Research Agent
+Complete architecture: Planner → Executor → Critic → Reflection → Memory
+Inspired by Anthropic's research agent patterns
 """
 
 import json
@@ -17,11 +18,20 @@ from enum import Enum
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-MEMORY_FILE = "agent_memory_multi.json"
-VECTOR_DB_PATH = "./vector_memory_multi"
-SAFE_WORKSPACE = "workspace_agent"
-MAX_STEPS = 5
-SIMILARITY_THRESHOLD = 0.65
+MEMORY_FILE = "agent_memory_research.json"
+VECTOR_DB_PATH = "./vector_memory_research"
+SAFE_WORKSPACE = "workspace_research"
+MAX_STEPS = 10
+MAX_REFLECTION_ITERATIONS = 3
+
+ALLOWED_TOOLS = [
+    "crea_file",
+    "esegui_codice",
+    "calcola",
+    "memoria",
+    "rispondi",
+    "ricerca",
+]
 
 SAFE_GLOBALS = {
     "__builtins__": {
@@ -48,268 +58,399 @@ SAFE_GLOBALS = {
 }
 
 
-class AgentType(Enum):
-    DIDATTICO = "didattico"
-    ROBOTICA = "robotica"
-    CODICE = "codice"
-    GENERALE = "generale"
-
-
-class BaseAgent:
-    """Base class per tutti gli agent."""
-
-    def __init__(self, agent_type: AgentType, name: str, description: str):
-        self.type = agent_type
-        self.name = name
-        self.description = description
-
-    def can_handle(self, query: str) -> float:
-        """Ritorna 0-1 score di quanto l'agent può gestire la query."""
-        return 0.0
-
-    def process(self, query: str, context: dict) -> dict:
-        """Processa la query e ritorna risultato."""
-        raise NotImplementedError
-
-
-class DidatticoAgent(BaseAgent):
-    """Agent specializzato in didattica Python."""
+class AgentState:
+    """Stato dell'agente che evolve nel tempo."""
 
     def __init__(self):
-        super().__init__(
-            AgentType.DIDATTICO, "Didattico", "Spiegazioni Python, lezioni, esercizi"
-        )
+        self.strategy_level = 1
+        self.success_rate = 0.5
+        self.last_errors = []
+        self.total_executions = 0
+        self.successful_executions = 0
+        self.improvement_history = []
 
-    def can_handle(self, query: str) -> float:
-        text = query.lower()
-        keywords = [
-            "spiega",
-            "lezione",
-            "come funziona",
-            "cos'è",
-            "esempio",
-            "esercizio",
-            "impara",
-            "studente",
-            "teoria",
-            "concetto",
-            "for",
-            "while",
-            "if",
-            "list",
-            "dizionario",
-            "funzione",
-            "classe",
-            "python",
-        ]
-        score = sum(1 for k in keywords if k in text)
-        return min(score / 3, 1.0)
-
-    def process(self, query: str, context: dict) -> dict:
-        prompt = f"""Sei un insegnante di Python paziente e chiaro.
-Spiega il concetto in modo semplice con esempi pratici.
-
-DOMANDA: {query}
-
-Rispondi in italiano in modo didattico."""
-
+    def to_dict(self) -> dict:
         return {
-            "tipo": "didattico",
-            "risposta": self._call_llm(prompt),
-            "azione": "rispondi",
+            "strategy_level": self.strategy_level,
+            "success_rate": self.success_rate,
+            "last_errors": self.last_errors[-5:],
+            "total_executions": self.total_executions,
+            "successful_executions": self.successful_executions,
+            "improvement_history": self.improvement_history[-10:],
         }
 
-    def _call_llm(self, prompt: str) -> str:
-        try:
-            import ollama
-
-            risposta = ollama.chat(
-                model="llama3.2", messages=[{"role": "user", "content": prompt}]
-            )
-            return risposta["message"]["content"].strip()
-        except:
-            return "Spiegazione non disponibile (LLM non connesso)"
+    def load(self, data: dict):
+        if data:
+            self.strategy_level = data.get("strategy_level", 1)
+            self.success_rate = data.get("success_rate", 0.5)
+            self.last_errors = data.get("last_errors", [])[-5:]
+            self.total_executions = data.get("total_executions", 0)
+            self.successful_executions = data.get("successful_executions", 0)
+            self.improvement_history = data.get("improvement_history", [])[-10:]
 
 
-class RoboticaAgent(BaseAgent):
-    """Agent specializzato in robotica e visualizzazione 3D."""
+class VectorMemory:
+    """Vector memory per RAG e storage semantico."""
 
-    def __init__(self):
-        super().__init__(
-            AgentType.ROBOTICA,
-            "Robotica",
-            "Robot 3D, Arduino, mani bioniche, animazioni",
-        )
+    def __init__(self, persist_path: str = VECTOR_DB_PATH):
+        self.client = None
+        self.collection = None
+        self._init(persist_path)
 
-    def can_handle(self, query: str) -> float:
-        text = query.lower()
-        keywords = [
-            "robot",
-            "mano",
-            "braccio",
-            "apri",
-            "chiudi",
-            "pugno",
-            "dita",
-            "arduino",
-            "3d",
-            "animazione",
-            "motore",
-            "servo",
-            "afferra",
-            "solleva",
-            "muovi",
-            "visualizzatore",
-            "gripper",
-        ]
-        score = sum(1 for k in keywords if k in text)
-        return min(score / 3, 1.0)
-
-    def process(self, query: str, context: dict) -> dict:
-        prompt = f"""Sei un esperto di robotica e automazione.
-Genera codice Python per robotica e animazioni 3D.
-
- Richiesta: {query}
-
-Se è richiesta un'animazione, genera codice Matplotlib/Visualization.
-Se è per Arduino, genera codice C++."""
-
-        return {
-            "tipo": "robotica",
-            "risposta": self._call_llm(prompt),
-            "azione": "rispondi",
-        }
-
-    def _call_llm(self, prompt: str) -> str:
-        try:
-            import ollama
-
-            risposta = ollama.chat(
-                model="llama3.2", messages=[{"role": "user", "content": prompt}]
-            )
-            return risposta["message"]["content"].strip()
-        except:
-            return "Codice robotica non disponibile"
-
-
-class CodiceAgent(BaseAgent):
-    """Agent specializzato in generazione codice Python."""
-
-    def __init__(self):
-        super().__init__(
-            AgentType.CODICE, "Codice", "Generazione codice, debugging, ottimizzazione"
-        )
-
-    def can_handle(self, query: str) -> float:
-        text = query.lower()
-        keywords = [
-            "codice",
-            "programma",
-            "script",
-            "crea",
-            "genera",
-            "scrivi",
-            "funzione",
-            "classe",
-            "loop",
-            "debug",
-            "errore",
-            "ottimizza",
-            "python",
-            "file",
-            "salva",
-            "esegui",
-        ]
-        score = sum(1 for k in keywords if k in text)
-        return min(score / 3, 1.0)
-
-    def process(self, query: str, context: dict) -> dict:
-        prompt = f"""Genera SOLO codice Python pulito e funzionante per:
-{query}
-
-Regole:
-- Solo codice, nessuna spiegazione
-- Codice sicuro e idiomatico
-- Se richiede file, usa la workspace './workspace_agent/'"""
-
-        codice = self._call_llm(prompt)
-
-        if "crea_file" in query.lower() or "salva" in query.lower():
-            return {
-                "tipo": "codice",
-                "risposta": codice,
-                "azione": "crea_file",
-                "percorso": "output.py",
-                "contenuto": codice,
-            }
-
-        return {
-            "tipo": "codice",
-            "risposta": codice,
-            "azione": "esegui_codice",
-            "codice": codice,
-        }
-
-    def _call_llm(self, prompt: str) -> str:
-        try:
-            import ollama
-
-            risposta = ollama.chat(
-                model="llama3.2", messages=[{"role": "user", "content": prompt}]
-            )
-            return risposta["message"]["content"].strip()
-        except:
-            return "# LLM non disponibile"
-
-
-class MultiAgentOrchestrator:
-    """Orchestratore multi-agent che coordina tutti gli agent."""
-
-    def __init__(self):
-        self.agents: List[BaseAgent] = [
-            DidatticoAgent(),
-            RoboticaAgent(),
-            CodiceAgent(),
-        ]
-        self.memory = self._load_memory()
-        self.vector_db = self._init_vector_db()
-        self.llm_available = self._check_llm()
-
-        logger.info(
-            f"✅ Multi-Agent Orchestrator attivato con {len(self.agents)} agent"
-        )
-
-    def _load_memory(self) -> dict:
-        if os.path.exists(MEMORY_FILE):
-            try:
-                with open(MEMORY_FILE, "r") as f:
-                    return json.load(f)
-            except:
-                pass
-        return {"history": [], "conoscenze": {}}
-
-    def _init_vector_db(self):
+    def _init(self, persist_path: str):
         try:
             import chromadb
             from chromadb.utils import embedding_functions
 
-            Path(VECTOR_DB_PATH).mkdir(exist_ok=True)
-            client = chromadb.PersistentClient(path=VECTOR_DB_PATH)
-            embedding_fn = embedding_functions.SentenceTransformerEmbeddingFunction(
-                model_name="all-MiniLM-L6-v2"
+            Path(persist_path).mkdir(exist_ok=True)
+            self.client = chromadb.PersistentClient(path=persist_path)
+            self.embedding_fn = (
+                embedding_functions.SentenceTransformerEmbeddingFunction(
+                    model_name="all-MiniLM-L6-v2"
+                )
             )
-            collection = client.get_or_create_collection(
-                name="multi_agent_memory", embedding_function=embedding_fn
+            self.collection = self.client.get_or_create_collection(
+                name="research_agent_memory",
+                embedding_function=self.embedding_fn,
+                metadata={"hnsw:space": "cosine"},
             )
-            logger.info("✅ Vector DB attivo")
-            return {
-                "client": client,
-                "collection": collection,
-                "embedding_fn": embedding_fn,
-            }
+            logger.info("✅ Vector Memory attivata")
         except:
             logger.warning("⚠️ Vector DB non disponibile")
-            return None
+            self.client = None
+
+    def add(self, text: str, metadata: dict = None) -> bool:
+        if not self.client or not self.collection:
+            return False
+        try:
+            doc_id = f"mem_{int(datetime.now().timestamp() * 1000)}"
+            self.collection.add(
+                documents=[text[:1000]], metadatas=[metadata or {}], ids=[doc_id]
+            )
+            return True
+        except:
+            return False
+
+    def search(self, query: str, k: int = 5, threshold: float = 0.6) -> List[dict]:
+        if not self.client or not self.collection:
+            return []
+        try:
+            results = self.collection.query(
+                query_texts=[query],
+                n_results=k,
+                include=["documents", "metadatas", "distances"],
+            )
+            if not results["documents"] or not results["documents"][0]:
+                return []
+            return [
+                {"text": doc, "metadata": meta, "similarity": 1 - dist}
+                for doc, meta, dist in zip(
+                    results["documents"][0],
+                    results["metadatas"][0],
+                    results["distances"][0],
+                )
+                if (1 - dist) > threshold
+            ]
+        except:
+            return []
+
+
+class Planner:
+    """PLANNER: trasforma richiesta in step eseguibili."""
+
+    def __init__(self, llm_available: bool):
+        self.llm_available = llm_available
+
+    def plan(self, user_input: str, state: AgentState, context: str = "") -> List[dict]:
+        """Genera piano di azioni basato sullo stato dell'agente."""
+
+        prompt = f"""Sei un planner di azioni per un AI Agent.
+Analizza la richiesta e crea una lista di step da eseguire.
+
+Stato agente: strategy_level={state.strategy_level}, success_rate={state.success_rate:.2f}
+
+Contesto dalla memoria:
+{context}
+
+Richiesta: "{user_input}"
+
+Scegli gli step necessari:
+- "rispondi" - risposta generale
+- "calcola" - calcoli matematici
+- "esegui_codice" - eseguire codice Python
+- "crea_file" - creare file
+- "ricerca" - cercare informazioni nella memoria
+- "riflessione" - riflettere sul risultato
+
+Rispondi SOLO con JSON array di step:
+[{{"tool": "nome_tool", "params": {{"chiave": "valore"}}}}]
+
+Esempio: "crea lista 1-5 e salvala" →
+[{{"tool": "esegui_codice", "params": {{"codice": "lista = list(range(1,6))\\nprint(lista)"}}}},
+ {{"tool": "crea_file", "params": {{"percorso": "lista.txt", "contenuto": "1,2,3,4,5"}}}}]
+
+JSON:"""
+
+        if self.llm_available:
+            try:
+                import ollama
+
+                risposta = ollama.chat(
+                    model="llama3.2", messages=[{"role": "user", "content": prompt}]
+                )
+                content = risposta["message"]["content"].strip()
+
+                if "[" in content and "]" in content:
+                    json_str = content[content.find("[") : content.rfind("]") + 1]
+                    steps = json.loads(json_str)
+
+                    if state.strategy_level > 1:
+                        steps.append({"tool": "riflessione", "params": {}})
+
+                    return steps
+            except Exception as e:
+                logger.error(f"Planning error: {e}")
+
+        return self._fallback_plan(user_input)
+
+    def _fallback_plan(self, user_input: str) -> List[dict]:
+        text = user_input.lower()
+
+        if any(x in text for x in ["calcola", "quanto fa", "somma"]) and re.search(
+            r"\d+", text
+        ):
+            expr = re.sub(r"[^\d+\-*/().]", "", text)
+            return [{"tool": "calcola", "params": {"espressione": expr}}]
+
+        if any(x in text for x in ["salva", "crea file", "scrivi"]):
+            return [
+                {
+                    "tool": "crea_file",
+                    "params": {"percorso": "output.txt", "contenuto": user_input},
+                }
+            ]
+
+        return [{"tool": "rispondi", "params": {"testo": "Come posso aiutarti?"}}]
+
+
+class Executor:
+    """EXECUTOR: esegue gli step del piano."""
+
+    def __init__(self):
+        Path(SAFE_WORKSPACE).mkdir(exist_ok=True)
+        self.execution_count = 0
+
+    def execute(self, step: dict, memory) -> tuple[str, bool]:
+        """Esegue uno step e ritorna (output, success)."""
+
+        if self.execution_count >= MAX_STEPS:
+            return "❌ Limite esecuzioni raggiunto", False
+
+        tool = step.get("tool", "")
+        params = step.get("params", {})
+
+        try:
+            if tool == "rispondi":
+                return params.get("testo", "Risposta vuota"), True
+
+            elif tool == "calcola":
+                return self._execute_calculator(params)
+
+            elif tool == "esegui_codice":
+                return self._execute_code(params)
+
+            elif tool == "crea_file":
+                return self._execute_file(params)
+
+            elif tool == "ricerca":
+                return self._execute_search(params, memory)
+
+            elif tool == "riflessione":
+                return "🔍 Riflessione completata", True
+
+            return f"❌ Tool sconosciuto: {tool}", False
+
+        except Exception as e:
+            self.execution_count += 1
+            return f"❌ Errore: {e}", False
+
+    def _execute_calculator(self, params: dict) -> tuple[str, bool]:
+        expr = params.get("espressione", "")
+        allowed = set("0123456789+-*/.() ")
+        if not all(c in allowed for c in expr):
+            return "❌ Espressione non valida", False
+        try:
+            result = eval(expr)
+            return f"✅ {expr} = {result}", True
+        except:
+            return "❌ Calcolo errato", False
+
+    def _execute_code(self, params: dict) -> tuple[str, bool]:
+        codice = params.get("codice", "")
+        if len(codice) > 2000:
+            return "❌ Codice troppo lungo", False
+        if any(
+            d in codice.lower()
+            for d in ["import os", "import sys", "subprocess", "__import__"]
+        ):
+            return "❌ Import non consentiti", False
+
+        old_stdout = sys.stdout
+        sys.stdout = captured = io.StringIO()
+        try:
+            exec(codice, SAFE_GLOBALS, {})
+            sys.stdout = old_stdout
+            output = captured.getvalue() or "✅ Eseguito"
+            return f"✅ {output}", True
+        except Exception as e:
+            sys.stdout = old_stdout
+            return f"❌ {e}", False
+
+    def _execute_file(self, params: dict) -> tuple[str, bool]:
+        percorso = params.get("percorso", "output.txt")
+        if ".." in percorso or percorso.startswith("/"):
+            return "❌ Percorso non consentito", False
+
+        safe_path = os.path.join(SAFE_WORKSPACE, os.path.basename(percorso))
+        try:
+            with open(safe_path, "w") as f:
+                f.write(params.get("contenuto", "")[:10000])
+            return f"✅ File: {safe_path}", True
+        except Exception as e:
+            return f"❌ {e}", False
+
+    def _execute_search(self, params: dict, memory) -> tuple[str, bool]:
+        query = params.get("query", "")
+        results = memory.vector.search(query, k=3)
+        if results:
+            return "📚 Risultati:\n" + "\n".join(
+                [f"- {r['text'][:80]}" for r in results]
+            ), True
+        return "📚 Nessun risultato", True
+
+    def reset(self):
+        self.execution_count = 0
+
+
+class Critic:
+    """CRITIC: valuta la qualità dei risultati."""
+
+    def __init__(self):
+        pass
+
+    def critique(
+        self, outputs: List[tuple[str, bool]], plan: List[dict]
+    ) -> Dict[str, Any]:
+        """Valuta outputs e ritorna punteggio + feedback."""
+
+        if not outputs:
+            return {
+                "score": 0.0,
+                "status": "FAIL",
+                "reason": "Nessun output",
+                "suggestion": "Riprova con più step",
+            }
+
+        success_count = sum(1 for _, success in outputs if success)
+        total = len(outputs)
+
+        score = success_count / max(1, total)
+
+        if score == 0:
+            return {
+                "score": 0.0,
+                "status": "FAIL",
+                "reason": "Tutti gli step falliti",
+                "suggestion": "Ricomposta il piano",
+            }
+
+        if score < 0.5:
+            return {
+                "score": score,
+                "status": "WEAK",
+                "reason": "Alcuni step falliti",
+                "suggestion": "Migliora la pianificazione",
+            }
+
+        if score < 1.0:
+            return {
+                "score": score,
+                "status": "PARTIAL",
+                "reason": "Quasi tutto ok",
+                "suggestion": "Rifletti sul risultato",
+            }
+
+        return {
+            "score": score,
+            "status": "OK",
+            "reason": "Tutto eseguito con successo",
+            "suggestion": "Ottimo lavoro!",
+        }
+
+
+class ReflectionLoop:
+    """REFLECTION LOOP: migliora la strategia dell'agente."""
+
+    def __init__(self):
+        pass
+
+    def reflect(
+        self,
+        state: AgentState,
+        critique: Dict[str, Any],
+        outputs: List[tuple[str, bool]],
+    ) -> AgentState:
+        """Aggiorna lo stato dell'agente basandosi sulla valutazione."""
+
+        score = critique["score"]
+        status = critique["status"]
+
+        state.total_executions += 1
+        if status == "OK" or status == "PARTIAL":
+            state.successful_executions += 1
+
+        new_success_rate = state.successful_executions / max(1, state.total_executions)
+
+        if status == "FAIL":
+            state.strategy_level = min(5, state.strategy_level + 1)
+            state.last_errors.append(critique["reason"])
+            state.improvement_history.append(
+                {
+                    "timestamp": datetime.now().isoformat(),
+                    "action": "level_up",
+                    "reason": critique["reason"],
+                }
+            )
+
+        elif status == "OK" and new_success_rate > 0.8:
+            state.strategy_level = max(1, state.strategy_level - 1)
+            state.improvement_history.append(
+                {
+                    "timestamp": datetime.now().isoformat(),
+                    "action": "level_down",
+                    "reason": "alta riuscita",
+                }
+            )
+
+        state.success_rate = new_success_rate
+
+        return state
+
+
+class SelfImprovingAgent:
+    """Self-Improving Research Agent completo."""
+
+    def __init__(self):
+        self.state = self._load_state()
+        self.vector_memory = VectorMemory()
+        self.planner = Planner(self._check_llm())
+        self.executor = Executor()
+        self.critic = Critic()
+        self.reflection = ReflectionLoop()
+
+        logger.info(
+            f"✅ Self-Improving Agent avviato. Strategy: {self.state.strategy_level}, Success: {self.state.success_rate:.2f}"
+        )
 
     def _check_llm(self) -> bool:
         try:
@@ -320,130 +461,131 @@ class MultiAgentOrchestrator:
         except:
             return False
 
-    def select_agent(self, query: str) -> tuple[BaseAgent, float]:
-        """Seleziona l'agent migliore per la query."""
-        best_agent = None
-        best_score = 0.0
+    def _load_state(self) -> AgentState:
+        state = AgentState()
+        if os.path.exists("agent_state.json"):
+            try:
+                with open("agent_state.json", "r") as f:
+                    state.load(json.load(f))
+            except:
+                pass
+        return state
 
-        for agent in self.agents:
-            score = agent.can_handle(query)
-            if score > best_score:
-                best_score = score
-                best_agent = agent
+    def _save_state(self):
+        with open("agent_state.json", "w") as f:
+            json.dump(self.state.to_dict(), f, indent=2)
 
-        if best_score < 0.3:
-            return self.agents[2], 0.5  # Default a codice
-
-        return best_agent, best_score
-
-    def get_context(self, query: str) -> str:
-        if not self.vector_db:
-            return ""
-
-        try:
-            results = self.vector_db["collection"].query(
-                query_texts=[query], n_results=3, include=["documents", "metadatas"]
-            )
-            if results["documents"] and results["documents"][0]:
-                ctx = "\n📚 Contesto:\n"
-                for doc in results["documents"][0]:
-                    ctx += f"- {doc[:100]}...\n"
-                return ctx
-        except:
-            pass
+    def _get_context(self, query: str) -> str:
+        results = self.vector_memory.search(query, k=3)
+        if results:
+            return "\n".join([r["text"][:100] for r in results])
         return ""
 
-    def process(self, query: str) -> dict:
-        agent, score = self.select_agent(query)
-        logger.info(f"🎯 Agent selezionato: {agent.name} (score: {score:.2f})")
+    def run(
+        self, user_input: str, max_iterations: int = MAX_REFLECTION_ITERATIONS
+    ) -> Dict[str, Any]:
+        """Esegue il loop completo: plan → execute → critique → reflect → memory."""
 
-        context = self.get_context(query)
-        context_dict = {
-            "context": context,
-            "history": self.memory.get("history", [])[-3:],
+        self.executor.reset()
+
+        context = self._get_context(user_input)
+
+        for iteration in range(max_iterations):
+            logger.info(f"📋 Iterazione {iteration + 1}/{max_iterations}")
+
+            plan = self.planner.plan(user_input, self.state, context)
+            logger.info(f"   Piano: {len(plan)} step")
+
+            outputs = []
+            for step in plan:
+                output, success = self.executor.execute(step, self.vector_memory)
+                outputs.append((output, success))
+                logger.info(
+                    f"   Step: {step.get('tool')} → {'✅' if success else '❌'}"
+                )
+
+            critique = self.critic.critique(outputs, plan)
+            logger.info(
+                f"   Critic: {critique['status']} (score: {critique['score']:.2f})"
+            )
+
+            self.state = self.reflection.reflect(self.state, critique, outputs)
+            self._save_state()
+
+            if critique["status"] == "OK":
+                break
+
+            if critique["status"] == "FAIL" and iteration < max_iterations - 1:
+                logger.info(
+                    f"   🔄 Retry con strategia livello {self.state.strategy_level}"
+                )
+                context += (
+                    f"\n[Iterazione {iteration + 1} fallita: {critique['reason']}]"
+                )
+
+        final_output = "\n".join([out for out, _ in outputs])
+
+        self.vector_memory.add(
+            user_input,
+            {
+                "output": final_output[:200],
+                "status": critique["status"],
+                "score": critique["score"],
+                "strategy_level": self.state.strategy_level,
+                "success_rate": self.state.success_rate,
+            },
+        )
+
+        self._save_memory(user_input, final_output, critique)
+
+        return {
+            "output": final_output,
+            "critique": critique,
+            "state": self.state.to_dict(),
+            "iterations": iteration + 1,
         }
 
-        result = agent.process(query, context_dict)
+    def _save_memory(self, input_text: str, output: str, critique: Dict):
+        memory_data = {"history": [], "conoscenze": {}}
 
-        self._save_interaction(query, result)
-
-        return result
-
-    def _save_interaction(self, query: str, result: dict):
-        self.memory["history"].append(
-            {
-                "query": query[:200],
-                "agent": result.get("tipo", "sconosciuto"),
-                "timestamp": datetime.now().isoformat(),
-            }
-        )
-        if len(self.memory["history"]) > 50:
-            self.memory["history"] = self.memory["history"][-25:]
-
-        with open(MEMORY_FILE, "w") as f:
-            json.dump(self.memory, f, indent=2)
-
-        if self.vector_db and result.get("risposta"):
+        if os.path.exists(MEMORY_FILE):
             try:
-                self.vector_db["collection"].add(
-                    documents=[result["risposta"][:500]],
-                    metadatas=[
-                        {"agent": result.get("tipo", "generic"), "query": query[:100]}
-                    ],
-                    ids=[f"mem_{int(datetime.now().timestamp() * 1000)}"],
-                )
+                with open(MEMORY_FILE, "r") as f:
+                    memory_data = json.load(f)
             except:
                 pass
 
+        memory_data["history"].append(
+            {
+                "input": input_text[:200],
+                "output": output[:200],
+                "status": critique["status"],
+                "score": critique["score"],
+                "timestamp": datetime.now().isoformat(),
+            }
+        )
 
-class Router:
-    """Router per eseguire le azioni degli agent."""
+        if len(memory_data["history"]) > 100:
+            memory_data["history"] = memory_data["history"][-50:]
 
-    def __init__(self):
-        Path(SAFE_WORKSPACE).mkdir(exist_ok=True)
+        with open(MEMORY_FILE, "w") as f:
+            json.dump(memory_data, f, indent=2)
 
-    def execute(self, azione: str, params: dict) -> str:
-        if azione == "rispondi":
-            return params.get("risposta", "Come posso aiutarti?")
-
-        if azione == "esegui_codice":
-            codice = params.get("codice", "")
-            if len(codice) > 2000:
-                return "❌ Codice troppo lungo"
-            if any(
-                d in codice.lower() for d in ["import os", "import sys", "subprocess"]
-            ):
-                return "❌ Import non consentiti"
-
-            old_stdout = sys.stdout
-            sys.stdout = captured = io.StringIO()
-            try:
-                exec(codice, SAFE_GLOBALS, {})
-                sys.stdout = old_stdout
-                return f"✅ {captured.getvalue() or 'Eseguito'}"
-            except Exception as e:
-                sys.stdout = old_stdout
-                return f"❌ {e}"
-
-        if azione == "crea_file":
-            percorso = params.get("percorso", "output.py")
-            percorso = os.path.join(SAFE_WORKSPACE, os.path.basename(percorso))
-            try:
-                with open(percorso, "w") as f:
-                    f.write(params.get("contenuto", "")[:10000])
-                return f"✅ File creato: {percorso}"
-            except Exception as e:
-                return f"❌ {e}"
-
-        return f"❌ Azione sconosciuta: {azione}"
+    def get_status(self) -> str:
+        return f"""📊 Agent Status:
+  Strategy Level: {self.state.strategy_level}
+  Success Rate: {self.state.success_rate:.2%}
+  Total Executions: {self.state.total_executions}
+  Successful: {self.state.successful_executions}
+  Errors: {len(self.state.last_errors)}"""
 
 
 def main():
-    orchestrator = MultiAgentOrchestrator()
-    router = Router()
+    """Demo Self-Improving Agent."""
+    agent = SelfImprovingAgent()
 
-    print("\n🤖 Multi-Agent System v6")
-    print("Agent: Didattico | Robotica | Codice")
+    print("\n🤖 Self-Improving Research Agent v7")
+    print("Architecture: Planner → Executor → Critic → Reflection → Memory")
     print("Digita 'esci' per uscire, 'stato' per info\n")
 
     while True:
@@ -454,18 +596,21 @@ def main():
             break
 
         if user_input.lower() == "stato":
-            print(f"📊 Interazioni: {len(orchestrator.memory['history'])}")
-            print(
-                "Agent disponibili:", ", ".join([a.name for a in orchestrator.agents])
-            )
+            print(f"\n{agent.get_status()}\n")
             continue
 
         if not user_input:
             continue
 
-        result = orchestrator.process(user_input)
-        output = router.execute(result.get("azione", "rispondi"), result)
-        print(f"\n🎯 [{result.get('tipo', '?')}] {output}\n")
+        result = agent.run(user_input)
+
+        print(f"\n📤 Output:")
+        print(result["output"])
+        print(
+            f"\n📊 Valutazione: {result['critique']['status']} | Score: {result['critique']['score']:.2f}"
+        )
+        print(f"🔄 Iterazioni: {result['iterations']}")
+        print(f"💡 Suggerimento: {result['critique']['suggestion']}\n")
 
 
 if __name__ == "__main__":
