@@ -114,7 +114,7 @@ class VectorMemory:
                 embedding_function=self.embedding_fn,
                 metadata={"hnsw:space": "cosine"},
             )
-            logger.info("✅ Vector Memory attivata")
+            logger.info("OK Vector Memory attivata")
         except:
             logger.warning("⚠️ Vector DB non disponibile")
             self.client = None
@@ -244,7 +244,7 @@ class Executor:
         """Esegue uno step e ritorna (output, success)."""
 
         if self.execution_count >= MAX_STEPS:
-            return "❌ Limite esecuzioni raggiunto", False
+            return "FAIL Limite esecuzioni raggiunto", False
 
         tool = step.get("tool", "")
         params = step.get("params", {})
@@ -268,56 +268,56 @@ class Executor:
             elif tool == "riflessione":
                 return "🔍 Riflessione completata", True
 
-            return f"❌ Tool sconosciuto: {tool}", False
+            return f"FAIL Tool sconosciuto: {tool}", False
 
         except Exception as e:
             self.execution_count += 1
-            return f"❌ Errore: {e}", False
+            return f"FAIL Errore: {e}", False
 
     def _execute_calculator(self, params: dict) -> tuple[str, bool]:
         expr = params.get("espressione", "")
         allowed = set("0123456789+-*/.() ")
         if not all(c in allowed for c in expr):
-            return "❌ Espressione non valida", False
+            return "FAIL Espressione non valida", False
         try:
             result = eval(expr)
-            return f"✅ {expr} = {result}", True
+            return f"OK {expr} = {result}", True
         except:
-            return "❌ Calcolo errato", False
+            return "FAIL Calcolo errato", False
 
     def _execute_code(self, params: dict) -> tuple[str, bool]:
         codice = params.get("codice", "")
         if len(codice) > 2000:
-            return "❌ Codice troppo lungo", False
+            return "FAIL Codice troppo lungo", False
         if any(
             d in codice.lower()
             for d in ["import os", "import sys", "subprocess", "__import__"]
         ):
-            return "❌ Import non consentiti", False
+            return "FAIL Import non consentiti", False
 
         old_stdout = sys.stdout
         sys.stdout = captured = io.StringIO()
         try:
             exec(codice, SAFE_GLOBALS, {})
             sys.stdout = old_stdout
-            output = captured.getvalue() or "✅ Eseguito"
-            return f"✅ {output}", True
+            output = captured.getvalue() or "OK Eseguito"
+            return f"OK {output}", True
         except Exception as e:
             sys.stdout = old_stdout
-            return f"❌ {e}", False
+            return f"FAIL {e}", False
 
     def _execute_file(self, params: dict) -> tuple[str, bool]:
         percorso = params.get("percorso", "output.txt")
         if ".." in percorso or percorso.startswith("/"):
-            return "❌ Percorso non consentito", False
+            return "FAIL Percorso non consentito", False
 
         safe_path = os.path.join(SAFE_WORKSPACE, os.path.basename(percorso))
         try:
             with open(safe_path, "w") as f:
                 f.write(params.get("contenuto", "")[:10000])
-            return f"✅ File: {safe_path}", True
+            return f"OK File: {safe_path}", True
         except Exception as e:
-            return f"❌ {e}", False
+            return f"FAIL {e}", False
 
     def _execute_search(self, params: dict, memory) -> tuple[str, bool]:
         query = params.get("query", "")
@@ -449,7 +449,7 @@ class SelfImprovingAgent:
         self.reflection = ReflectionLoop()
 
         logger.info(
-            f"✅ Self-Improving Agent avviato. Strategy: {self.state.strategy_level}, Success: {self.state.success_rate:.2f}"
+            f"OK Self-Improving Agent avviato. Strategy: {self.state.strategy_level}, Success: {self.state.success_rate:.2f}"
         )
 
     def _check_llm(self) -> bool:
@@ -501,7 +501,7 @@ class SelfImprovingAgent:
                 output, success = self.executor.execute(step, self.vector_memory)
                 outputs.append((output, success))
                 logger.info(
-                    f"   Step: {step.get('tool')} → {'✅' if success else '❌'}"
+                    f"   Step: {step.get('tool')} → {'OK' if success else 'FAIL'}"
                 )
 
             critique = self.critic.critique(outputs, plan)
@@ -572,7 +572,7 @@ class SelfImprovingAgent:
             json.dump(memory_data, f, indent=2)
 
     def get_status(self) -> str:
-        return f"""📊 Agent Status:
+        return f"""[*] Agent Status:
   Strategy Level: {self.state.strategy_level}
   Success Rate: {self.state.success_rate:.2%}
   Total Executions: {self.state.total_executions}
@@ -584,15 +584,15 @@ def main():
     """Demo Self-Improving Agent."""
     agent = SelfImprovingAgent()
 
-    print("\n🤖 Self-Improving Research Agent v7")
-    print("Architecture: Planner → Executor → Critic → Reflection → Memory")
-    print("Digita 'esci' per uscire, 'stato' per info\n")
+    print("\n[*] Self-Improving Research Agent v7")
+    print("Architecture: Planner -> Executor -> Critic -> Reflection -> Memory")
+    print("Digita 'esci' per uscire, 'stato' per info")
 
     while True:
-        user_input = input("➤ ").strip()
+        user_input = input(">> ").strip()
 
         if user_input.lower() in ["esci", "exit"]:
-            print("👋 Ciao!")
+            print("Ciao!")
             break
 
         if user_input.lower() == "stato":
@@ -604,13 +604,13 @@ def main():
 
         result = agent.run(user_input)
 
-        print(f"\n📤 Output:")
+        print(f"\n-- Output:")
         print(result["output"])
         print(
-            f"\n📊 Valutazione: {result['critique']['status']} | Score: {result['critique']['score']:.2f}"
+            f"\n-- Valutazione: {result['critique']['status']} | Score: {result['critique']['score']:.2f}"
         )
-        print(f"🔄 Iterazioni: {result['iterations']}")
-        print(f"💡 Suggerimento: {result['critique']['suggestion']}\n")
+        print(f"-- Iterazioni: {result['iterations']}")
+        print(f"-- Suggerimento: {result['critique']['suggestion']}\n")
 
 
 if __name__ == "__main__":
