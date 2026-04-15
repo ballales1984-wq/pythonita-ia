@@ -195,10 +195,22 @@ JSON:"""
             try:
                 import ollama
 
-                risposta = ollama.chat(
-                    model="llama3.2", messages=[{"role": "user", "content": prompt}]
+                try:
+                    risposta = ollama.chat(
+                        model="gemma3:1b",
+                        messages=[{"role": "user", "content": prompt}],
+                    )
+                except:
+                    risposta = ollama.chat(
+                        model="deepseek-coder:latest",
+                        messages=[{"role": "user", "content": prompt}],
+                    )
+
+                content = (
+                    risposta["message"]["content"]
+                    .encode("utf-8", errors="replace")
+                    .decode("utf-8")
                 )
-                content = risposta["message"]["content"].strip()
 
                 if "[" in content and "]" in content:
                     json_str = content[content.find("[") : content.rfind("]") + 1]
