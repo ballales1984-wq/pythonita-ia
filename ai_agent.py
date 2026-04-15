@@ -1,6 +1,6 @@
 """
-AI Agent - Versione 4 (SAFE + Vector Memory)
-Sicuro + Memory vettoriale semantica
+AI Agent v4 - SAFE + Vector Memory
+Memoria semantica persistente con Chroma + sentence-transformers
 """
 
 import json
@@ -9,18 +9,19 @@ import logging
 import re
 import io
 import sys
-from typing import Any, Optional, List
 from datetime import datetime
 from pathlib import Path
+from typing import Any, Optional, List
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-MEMORY_FILE = "agent_memory.json"
-SAFE_WORKSPACE = "workspace"
+MEMORY_FILE = "agent_memory_safe.json"
+VECTOR_DB_PATH = "./vector_memory"
+SAFE_WORKSPACE = "workspace_agent"
 MAX_STEPS = 5
 MAX_MEMORY_SIZE = 500
-MAX_CODE_OUTPUT = 1000
+
 ALLOWED_TOOLS = ["crea_file", "esegui_codice", "calcola", "memoria", "rispondi"]
 
 SAFE_GLOBALS = {
@@ -48,35 +49,111 @@ SAFE_GLOBALS = {
 }
 
 
+class VectorMemory:
+    """Memoria vettoriale semantica con Chroma."""
+
+    def __init__(self):
+        self.client = None
+        self.collection = None
+        self._init_vector_db()
+
+    def _init_vector_db(self):
+        try:
+            import chromadb
+            from chromadb.utils import embedding_functions
+
+            Path(VECTOR_DB_PATH).mkdir(exist_ok=True)
+            self.client = chromadb.PersistentClient(path=VECTOR_DB_PATH)
+            self.embedding_fn = (
+                embedding_functions.SentenceTransformerEmbeddingFunction(
+                    model_name="all-MiniLM-L6-v2"
+                )
+            )
+            self.collection = self.client.get_or_create_collection(
+                name="pythonita_agent_memory",
+                embedding_function=self.embedding_fn,
+                metadata={"hnsw:space": "cosine"},
+            )
+            logger.info("✅ Vector memory attivata (Chroma + MiniLM)")
+        except ImportError:
+            logger.warning(
+                "⚠️ Chroma non installato. Usa: pip install chromadb sentence-transformers"
+            )
+            self.client = None
+        except Exception as e:
+            logger.warning(f"⚠️ Vector DB non disponibile: {e}")
+            self.client = None
+
+    def add(self, text: str, metadata: dict = None, doc_id: str = None) -> bool:
+        """Aggiunge testo con embedding semantico."""
+        if not self.client or not self.collection:
+            return False
+
+        if not metadata:
+            metadata = {}
+        metadata["timestamp"] = datetime.now().isoformat()
+
+        if not doc_id:
+            doc_id = f"mem_{int(datetime.now().timestamp() * 1000)}"
+
+        try:
+            self.collection.add(
+                documents=[text[:1000]], metadatas=[metadata], ids=[doc_id]
+            )
+            return True
+        except Exception as e:
+            logger.error(f"Errore aggiunta vector: {e}")
+            return False
+
+    def search(self, query: str, k: int = 5) -> List[dict]:
+        """Ricerca semantica (RAG)."""
+        if not self.client or not self.collection:
+            return []
+
+        try:
+            results = self.collection.query(
+                query_texts=[query],
+                n_results=k,
+                include=["documents", "metadatas", "distances"],
+            )
+
+            if not results["documents"] or not results["documents"][0]:
+                return []
+
+            return [
+                {"text": doc, "metadata": meta, "similarity": 1 - dist}
+                for doc, meta, dist in zip(
+                    results["documents"][0],
+                    results["metadatas"][0],
+                    results["distances"][0],
+                )
+            ]
+        except Exception as e:
+            logger.error(f"Errore ricerca: {e}")
+            return []
+
+
 def safe_create_workspace():
-    """Crea la workspace sicura se non esiste."""
     Path(SAFE_WORKSPACE).mkdir(exist_ok=True)
 
 
-def load_memory() -> dict:
-    """Carica memoria da file JSON."""
+def load_structured_memory() -> dict:
     if not os.path.exists(MEMORY_FILE):
-        return {"history": [], "stato": {}, "conoscenze": {}, "embeddings": []}
-
+        return {"history": [], "stato": {}, "conoscenze": {}, "version": "v4_vector"}
     try:
         with open(MEMORY_FILE, "r", encoding="utf-8") as f:
             return json.load(f)
     except:
-        return {"history": [], "stato": {}, "conoscenze": {}, "embeddings": []}
+        return {"history": [], "stato": {}, "conoscenze": {}, "version": "v4_vector"}
 
 
-def save_memory(memory: dict):
-    """Salva memoria su file JSON."""
+def save_structured_memory(memory: dict):
     with open(MEMORY_FILE, "w", encoding="utf-8") as f:
         json.dump(memory, f, indent=2, ensure_ascii=False)
 
 
-def safe_add_to_memory(
-    memory: dict, ruolo: str, contenuto: str, azione: str = None, tool: str = None
-):
-    """Aggiunge elemento alla memoria con limiti di sicurezza."""
+def safe_add_to_memory(memory: dict, ruolo: str, contenuto: str, azione: str = None):
     if len(str(contenuto)) > MAX_MEMORY_SIZE:
-        logger.warning("⚠️ Contenuto troppo grande, troncato")
         contenuto = str(contenuto)[:MAX_MEMORY_SIZE]
 
     entry = {
@@ -86,146 +163,75 @@ def safe_add_to_memory(
     }
     if azione:
         entry["azione"] = azione
-    if tool:
-        entry["tool"] = tool
 
     memory["history"].append(entry)
-
     if len(memory["history"]) > 100:
         memory["history"] = memory["history"][-50:]
 
-    save_memory(memory)
+    save_structured_memory(memory)
     return memory
 
 
-def memorizza(memory: dict, chiave: str, valore: Any) -> dict:
-    """Memorizza informazione chiave-valore."""
+def memorizza(memory: dict, chiave: str, valore: Any):
     if len(str(valore)) > MAX_MEMORY_SIZE:
         valore = str(valore)[:MAX_MEMORY_SIZE]
-
     memory["conoscenze"][chiave] = {
         "valore": valore,
         "timestamp": datetime.now().isoformat(),
     }
-    save_memory(memory)
-    return memory
+    save_structured_memory(memory)
 
 
 def recupera(memory: dict, chiave: str) -> Optional[Any]:
-    """Recupera informazione dalla memoria."""
     if chiave in memory["conoscenze"]:
         return memory["conoscenze"][chiave]["valore"]
     return None
 
 
-def search_semantic(memory: dict, query: str, top_k: int = 3) -> List[dict]:
-    """Cerca nella memoria in modo semantico (keyword matching)."""
-    if not memory.get("history"):
-        return []
-
-    query_lower = query.lower()
-    query_words = set(query_lower.split())
-
-    scored = []
-    for entry in memory["history"]:
-        content_lower = entry.get("contenuto", "").lower()
-
-        matches = sum(1 for word in query_words if word in content_lower)
-        score = matches / max(len(query_words), 1)
-
-        if score > 0:
-            scored.append((score, entry))
-
-    scored.sort(key=lambda x: x[0], reverse=True)
-    return [entry for _, entry in scored[:top_k]]
-
-
-def add_embedding(memory: dict, chiave: str, embedding: List[float]):
-    """Aggiunge embedding vettoriale."""
-    if "embeddings" not in memory:
-        memory["embeddings"] = []
-
-    memory["embeddings"].append(
-        {
-            "chiave": chiave,
-            "vector": embedding[:128],
-            "timestamp": datetime.now().isoformat(),
-        }
-    )
-
-    if len(memory["embeddings"]) > 50:
-        memory["embeddings"] = memory["embeddings"][-25:]
-
-    save_memory(memory)
-
-
 class SafeTool:
-    """Base class per tool con validazione."""
-
     def __init__(self, name: str, description: str):
         self.name = name
         self.description = description
-
-    def validate_params(self, **kwargs) -> bool:
-        return True
 
     def execute(self, memory: dict, **kwargs) -> str:
         raise NotImplementedError
 
 
 class SafeFileTool(SafeTool):
-    """Tool per creare file con sicurezza."""
-
     def __init__(self):
-        super().__init__("crea_file", "Crea un file nella workspace sicura")
-
-    def validate_params(self, **kwargs) -> bool:
-        percorso = kwargs.get("percorso", "")
-        if ".." in percorso or percorso.startswith("/") or ":" in percorso:
-            return False
-        return True
+        super().__init__("crea_file", "Crea file nella workspace sicura")
 
     def execute(self, memory: dict, percorso: str, contenuto: str) -> str:
-        if not self.validate_params(percorso=percorso):
+        if ".." in percorso or percorso.startswith("/") or ":" in percorso:
             return "❌ Percorso non consentito"
 
         safe_create_workspace()
-
         safe_path = os.path.join(SAFE_WORKSPACE, os.path.basename(percorso))
 
         try:
             with open(safe_path, "w", encoding="utf-8") as f:
                 f.write(contenuto[:10000])
             safe_add_to_memory(
-                memory, "system", f"File creato: {safe_path}", azione="crea_file"
+                memory, "system", f"File: {safe_path}", azione="crea_file"
             )
-            return f"✅ File creato: {safe_path}"
+            return f"✅ File: {safe_path}"
         except Exception as e:
             return f"❌ Errore: {e}"
 
 
 class SafePythonTool(SafeTool):
-    """Tool per eseguire codice Python in sandbox."""
-
     def __init__(self):
-        super().__init__("esegui_codice", "Esegua codice Python in sandbox")
+        super().__init__("esegui_codice", "Esegua Python in sandbox")
 
     def execute(self, memory: dict, codice: str) -> str:
         if len(codice) > 2000:
-            return "❌ Codice troppo lungo (max 2000 char)"
+            return "❌ Codice troppo lungo"
 
-        codice = codice.strip()
         if any(
             d in codice.lower()
-            for d in [
-                "import os",
-                "import sys",
-                "import subprocess",
-                "open(",
-                "__import__",
-            ]
+            for d in ["import os", "import sys", "import subprocess", "__import__"]
         ):
-            return "❌ Import non consentiti in sandbox"
+            return "❌ Import non consentiti"
 
         old_stdout = sys.stdout
         sys.stdout = captured = io.StringIO()
@@ -234,17 +240,9 @@ class SafePythonTool(SafeTool):
             result = {}
             exec(codice, SAFE_GLOBALS, result)
             sys.stdout = old_stdout
-
-            output = captured.getvalue()
-            if not output and result:
-                output = str(result)[:MAX_CODE_OUTPUT]
-            elif output:
-                output = output[:MAX_CODE_OUTPUT]
-            else:
-                output = "✅ Codice eseguito"
-
+            output = captured.getvalue() or str(result)[:1000] or "✅ Eseguito"
             safe_add_to_memory(
-                memory, "system", f"Eseguito: {codice[:50]}...", azione="esegui_codice"
+                memory, "system", f"Code: {codice[:50]}...", azione="esegui_codice"
             )
             return f"✅ {output}"
         except Exception as e:
@@ -253,67 +251,67 @@ class SafePythonTool(SafeTool):
 
 
 class SafeCalculatorTool(SafeTool):
-    """Tool per calcoli con validazione."""
-
     def __init__(self):
-        super().__init__("calcola", "Esegue calcoli matematici sicuri")
-
-    def validate_params(self, **kwargs) -> bool:
-        expr = kwargs.get("espressione", "")
-        allowed_chars = set("0123456789+-*/.() ")
-        return all(c in allowed_chars for c in expr)
+        super().__init__("calcola", "Calcoli matematici")
 
     def execute(self, memory: dict, espressione: str) -> str:
-        if not self.validate_params(espressione=espressione):
+        allowed = set("0123456789+-*/.() ")
+        if not all(c in allowed for c in espressione):
             return "❌ Espressione non valida"
-
         try:
             result = eval(espressione)
-            safe_add_to_memory(
-                memory, "system", f"Calcolo: {espressione} = {result}", azione="calcola"
-            )
             return f"✅ {espressione} = {result}"
-        except Exception as e:
-            return f"❌ Errore: {e}"
+        except:
+            return f"❌ Errore calcolo"
 
 
 class SafeMemoryTool(SafeTool):
-    """Tool per memoria con limiti."""
-
     def __init__(self):
-        super().__init__("memoria", "Memorizza o recupera informazioni")
+        super().__init__("memoria", "Memoria strutturata e semantica")
 
     def execute(
-        self, memory: dict, azione: str = None, chiave: str = None, valore: str = None
+        self,
+        memory: dict,
+        azione: str = None,
+        chiave: str = None,
+        valore: str = None,
+        cerca: str = None,
+        vector_memory: VectorMemory = None,
     ) -> str:
         if azione == "salva" and chiave and valore:
-            memory = memorizza(memory, chiave, valore[:500])
+            memorizza(memory, chiave, valore[:500])
+            if vector_memory:
+                vector_memory.add(
+                    f"{chiave}: {valore}", {"tipo": "conoscenza", "chiave": chiave}
+                )
             return f"🧠 Memorizzato: {chiave}"
 
         if azione == "leggi" and chiave:
             result = recupera(memory, chiave)
             if result:
                 return f"🧠 {chiave}: {result}"
-            return f"🧠 Nessun dato per: {chiave}"
+            return f"🧠 Nessun dato: {chiave}"
 
-        if azione == "cerca" and chiave:
-            results = search_semantic(memory, chiave)
+        if azione == "cerca" and cerca and vector_memory:
+            results = vector_memory.search(cerca, k=3)
             if results:
-                return f"🧠 Risultati per '{chiave}':\n" + "\n".join(
-                    [f"- {r['contenuto'][:100]}" for r in results]
+                return "🧠 Risultati semantici:\n" + "\n".join(
+                    [
+                        f"- {r['text'][:100]} (sim: {r['similarity']:.2f})"
+                        for r in results
+                    ]
                 )
-            return f"🧠 Nessun risultato per: {chiave}"
+            return "🧠 Nessun risultato"
 
         if azione == "stato":
-            return f"🧠 Memoria: {len(memory['history'])} eventi, {len(memory['conoscenze'])} conoscenze"
+            return f"🧠 Storia: {len(memory['history'])}, Conoscenze: {len(memory['conoscenze'])}"
 
-        return "🧠 Usa: memoria(salva|leggi|cerca, chiave, valore)"
+        return "🧠 Usa: memoria(salva|leggi|cerca|stato)"
 
 
 class SafeRouter:
-    """Router con whitelist e limiti."""
-
-    def __init__(self):
+    def __init__(self, vector_memory: VectorMemory = None):
+        self.vector_memory = vector_memory
         self.tools = {
             "crea_file": SafeFileTool(),
             "esegui_codice": SafePythonTool(),
@@ -323,10 +321,8 @@ class SafeRouter:
         self.execution_count = 0
 
     def route(self, action: str, params: dict, memory: dict) -> str:
-        """Instrada con validazione."""
-
         if self.execution_count >= MAX_STEPS:
-            return "❌ Limite esecuzioni raggiunto"
+            return "❌ Limite raggiunto"
 
         if action not in ALLOWED_TOOLS:
             return f"❌ Tool non permesso: {action}"
@@ -336,73 +332,69 @@ class SafeRouter:
 
         if action in self.tools:
             self.execution_count += 1
-            tool = self.tools[action]
-            return tool.execute(memory, **params)
+            params["vector_memory"] = self.vector_memory
+            return self.tools[action].execute(memory, **params)
 
         return f"❌ Azione sconosciuta: {action}"
 
-    def reset_count(self):
+    def reset(self):
         self.execution_count = 0
 
 
 class Agent:
-    """AI Agent sicuro con memory vettoriale."""
+    """AI Agent sicuro con memoria vettoriale."""
 
     def __init__(self):
-        self.memory = load_memory()
-        self.router = SafeRouter()
+        self.structured_memory = load_structured_memory()
+        self.vector_memory = VectorMemory()
+        self.router = SafeRouter(self.vector_memory)
         self.llm = None
         self._init_llm()
 
         logger.info(
-            f"✅ Agent v4 avviato. Memoria: {len(self.memory['history'])} eventi"
+            f"✅ Agent v4 Vector. Storia: {len(self.structured_memory['history'])}"
         )
 
     def _init_llm(self):
-        """Inizializza LLM."""
         try:
             import ollama
 
             ollama.list()
             self.llm = "ollama"
-            logger.info("✅ LLM connesso (Ollama)")
+            logger.info("✅ LLM connesso")
         except:
             self.llm = None
-            logger.warning("⚠️ LLM non disponibile")
+
+    def get_relevant_context(self, query: str) -> str:
+        results = self.vector_memory.search(query, k=4)
+        if not results:
+            return ""
+
+        ctx = "\n📚 Contesto dalla memoria:\n"
+        for r in results:
+            ctx += f"- {r['text'][:120]}...\n"
+        return ctx
 
     def plan_action(self, input_text: str) -> dict:
-        """Decision layer con contesto memoria."""
+        contesto_vett = self.get_relevant_context(input_text)
 
-        contesto = ""
-        if self.memory["history"]:
-            recent = self.memory["history"][-3:]
-            contesto = "\n".join([f"{c['ruolo']}: {c['contenuto']}" for c in recent])
+        recent = (
+            self.structured_memory["history"][-3:]
+            if self.structured_memory["history"]
+            else []
+        )
+        contesto_stru = "\n".join([f"{c['ruolo']}: {c['contenuto']}" for c in recent])
 
-        conoscenze = list(self.memory["conoscenze"].keys())
-        if conoscenze:
-            contesto += f"\nConoscenze: {conoscenze}"
-
-        prompt = f"""Sei un AI Agent italiano SICURO. Analizza la richiesta e decidi cosa fare.
-
-Contesto recente:
-{contesto}
-
-Regole di sicurezza:
-- NON usare import os, sys, subprocess
-- File salvati solo nella cartella 'workspace'
-- Max 5 azioni per richiesta
-
-Azioni disponibili (SOLO queste):
-- "rispondi" - per saluti e domande
-- "crea_file" - per creare file (percorso, contenuto)
-- "esegui_codice" - per Python (codice) - NO import pericolosi
-- "calcola" - per calcoli (espressione)
-- "memoria" - per salvare/leggere/cercare (azione: salva|leggi|cerca, chiave, valore)
+        prompt = f"""Sei Pythonita IA, assistente didattico sicuro.
+{contesto_vett}
+{contesto_stru}
 
 Richiesta: "{input_text}"
 
-Rispondi SOLO con JSON:
-{{"azione": "nome", "parametri": {{"chiave": "valore"}}}}
+Azioni: rispondi, calcola, esegui_codice, crea_file, memoria(salva|leggi|cerca|stato)
+
+Rispondi SOLO JSON:
+{{"azione": "...", "parametri": {{...}}}}
 
 JSON:"""
 
@@ -418,12 +410,11 @@ JSON:"""
                 model="llama3.2", messages=[{"role": "user", "content": prompt}]
             )
             content = risposta["message"]["content"].strip()
-
             if "{" in content:
                 json_str = content[content.find("{") : content.rfind("}") + 1]
                 return json.loads(json_str)
         except Exception as e:
-            logger.error(f"Errore LLM: {e}")
+            logger.error(f"LLM: {e}")
 
         return {"azione": "rispondi", "parametri": {}}
 
@@ -434,54 +425,46 @@ JSON:"""
             expr = re.sub(r"[^\d+\-*/().]", "", text)
             return {"azione": "calcola", "parametri": {"espressione": expr}}
 
-        if any(x in text for x in ["salva", "crea file"]):
+        if any(x in text for x in ["salva", "ricorda"]):
             return {
-                "azione": "crea_file",
-                "parametri": {"percorso": "output.txt", "contenuto": input_text},
+                "azione": "memoria",
+                "parametri": {
+                    "azione": "salva",
+                    "chiave": "info",
+                    "valore": input_text,
+                },
             }
 
-        if any(x in text for x in ["chiama", "nome"]):
-            nome = re.search(r"mi chiamo (\w+)", text)
-            if nome:
-                return {
-                    "azione": "memoria",
-                    "parametri": {
-                        "azione": "salva",
-                        "chiave": "nome_utente",
-                        "valore": nome.group(1),
-                    },
-                }
+        if "cerca" in text:
+            return {
+                "azione": "memoria",
+                "parametri": {"azione": "cerca", "cerca": input_text},
+            }
 
         return {"azione": "rispondi", "parametri": {}}
 
     def run(self, input_text: str) -> str:
-        """Esegue ciclo completo dell'agent."""
-
-        safe_add_to_memory(self.memory, "utente", input_text)
+        self.vector_memory.add(input_text, {"ruolo": "utente", "tipo": "input"})
 
         piano = self.plan_action(input_text)
-        logger.info(f"📋 Piano: {piano}")
-
         risultato = self.router.route(
-            piano.get("azione", "rispondi"), piano.get("parametri", {}), self.memory
+            piano.get("azione"), piano.get("parametri", {}), self.structured_memory
         )
 
-        safe_add_to_memory(self.memory, "agent", str(risultato)[:100])
-        self.router.reset_count()
+        safe_add_to_memory(self.structured_memory, "utente", input_text)
+        safe_add_to_memory(self.structured_memory, "agent", str(risultato)[:100])
+        self.vector_memory.add(risultato, {"ruolo": "agent", "tipo": "output"})
 
+        self.router.reset()
         return risultato
-
-    def get_stato(self) -> str:
-        return f"📊 Memoria: {len(self.memory['history'])} eventi, {len(self.memory['conoscenze'])} conoscenze"
 
 
 def main():
-    """Demo AI Agent v4."""
     safe_create_workspace()
     agent = Agent()
 
-    print("\n🤖 AI Agent v4 - SAFE + Vector Memory")
-    print("Workspace: ./workspace | Max steps: 5 | 'esci' per uscire\n")
+    print("\n🤖 Pythonita IA - SAFE Agent v4 + Vector Memory")
+    print("Digita 'esci' per uscire, 'stato' per info\n")
 
     while True:
         user_input = input("➤ ").strip()
@@ -491,7 +474,7 @@ def main():
             break
 
         if user_input.lower() == "stato":
-            print(f"\n{agent.get_stato()}\n")
+            print(f"📊 Memoria: {len(agent.structured_memory['history'])} eventi")
             continue
 
         if not user_input:
