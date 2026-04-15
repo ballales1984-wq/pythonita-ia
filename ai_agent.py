@@ -33,29 +33,24 @@ ALLOWED_TOOLS = [
     "ricerca",
 ]
 
-SAFE_GLOBALS = {
-    "__builtins__": {
-        "print": print,
-        "range": range,
-        "len": len,
-        "list": list,
-        "dict": dict,
-        "str": str,
-        "int": int,
-        "float": float,
-        "bool": bool,
-        "abs": abs,
-        "max": max,
-        "min": min,
-        "sum": sum,
-        "sorted": sorted,
-        "enumerate": enumerate,
-        "zip": zip,
-        "map": map,
-        "filter": filter,
-        "round": round,
-    }
-}
+# Whitelist di funzioni pericolose da bloccare
+FORBIDDEN_PATTERNS = [
+    "import os",
+    "import sys",
+    "import subprocess",
+    "import socket",
+    "import requests",
+    "eval(",
+    "exec(",
+    "__import__",
+    "open(",
+    "os.system",
+    "subprocess.call",
+]
+
+
+# Non usato piu - mantenuto per compatibilita
+SAFE_GLOBALS = {}
 
 
 class AgentState:
@@ -301,18 +296,30 @@ class Executor:
 
     def _execute_code(self, params: dict) -> tuple[str, bool]:
         codice = params.get("codice", "")
-        if len(codice) > 2000:
+        if len(codice) > 10000:
             return "FAIL Codice troppo lungo", False
+
+        # Blocca solo operazioni pericolose
         if any(
             d in codice.lower()
-            for d in ["import os", "import sys", "subprocess", "__import__"]
+            for d in [
+                "import os",
+                "import sys",
+                "import subprocess",
+                "eval(",
+                "exec(",
+                "__import__",
+                "open(",
+            ]
         ):
-            return "FAIL Import non consentiti", False
+            return "FAIL Import pericolosi non consentiti", False
 
         old_stdout = sys.stdout
         sys.stdout = captured = io.StringIO()
         try:
-            exec(codice, SAFE_GLOBALS, {})
+            # Esecuzione con namespace condiviso
+            namespace = {"__builtins__": __builtins__}
+            exec(codice, namespace)
             sys.stdout = old_stdout
             output = captured.getvalue() or "OK Eseguito"
             return f"OK {output}", True
